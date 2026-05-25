@@ -40,7 +40,7 @@ const UserBindAddressModule = {
         ).bind(user_id, address_id).first("user_id");
         if (db_user_address_id) return c.json({ success: true })
         // check if binded address count
-        const userRole = c.get("userRolePayload");
+        const userRole = c.get("userRolePayload") || (await commonGetUserRole(c, Number(user_id)))?.role;
         if (await isAddressCountLimitReached(c, user_id, userRole)) {
             return c.text(msgs.MaxAddressCountReachedMsg, 400)
         }

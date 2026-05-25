@@ -157,7 +157,7 @@ const renamePasskey = async () => {
 
 <template>
     <div class="center" v-if="userSettings.user_email">
-        <n-card :bordered="false" embedded>
+        <div class="settings-panel">
             <n-button @click="showPasskeyList = true; fetchPasskeyList();" secondary block strong>
                 {{ t('showPasskeyList') }}
             </n-button>
@@ -172,7 +172,7 @@ const renamePasskey = async () => {
             <n-button @click="showLogout = true" secondary block strong>
                 {{ t('logout') }}
             </n-button>
-        </n-card>
+        </div>
         <n-modal v-model:show="showCreatePasskey" preset="dialog" :title="t('createPasskey')">
             <n-input v-model:value="passkeyName" :placeholder="t('passkeyNamePlaceholder')" />
             <template #action>
@@ -209,14 +209,15 @@ const renamePasskey = async () => {
     justify-content: center;
 }
 
-
-.n-card {
+.settings-panel {
+    width: 100%;
     max-width: 800px;
     text-align: left;
+    display: grid;
+    gap: 10px;
 }
 
 .n-button {
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin: 0;
 }
 </style>

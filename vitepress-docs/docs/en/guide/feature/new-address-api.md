@@ -7,12 +7,15 @@ This page describes **Address JWT**, which is different from **User JWT**:
   - Use `Authorization: Bearer <jwt>` header
   - Access `/api/*` endpoints (view mails, delete mails, etc.)
 
-- **User JWT**: Obtained via `/user_api/login` or `/user_api/register`
+- **User JWT**: Obtained via `/user_api/login`
   - Use `x-user-token: <jwt>` header
   - Access `/user_api/*` endpoints (user account management)
 
 **Do not confuse these two JWT types!**
 :::
+
+> [!NOTE]
+> If `ZHANG_AUTH_URL` is configured, tmpmail delegates sign-in to the external auth center. Sign-up, email verification, and password-recovery flows should then use the hosted pages from that auth service. After the user's first successful tmpmail sign-in, the worker auto-provisions the local user and issues the local `x-user-token`.
 
 ## Create Email Address via Admin API
 

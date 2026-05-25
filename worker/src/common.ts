@@ -754,7 +754,14 @@ export const commonGetUserRole = async (
     const role_text = await c.env.DB.prepare(
         `SELECT role_text FROM user_roles where user_id = ?`
     ).bind(user_id).first<string | undefined | null>("role_text");
-    return role_text ? user_roles.find((r) => r.role === role_text) : null;
+    if (!role_text) return null;
+    const configuredRole = user_roles.find((r) => r.role === role_text);
+    if (configuredRole) return configuredRole;
+    return {
+        role: role_text,
+        domains: getDefaultDomains(c),
+        prefix: getStringValue(c.env.PREFIX).trim().toLowerCase(),
+    };
 }
 
 export const getAddressPrefix = async (c: Context<HonoCustomType>): Promise<string | undefined> => {

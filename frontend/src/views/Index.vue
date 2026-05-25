@@ -1,34 +1,18 @@
 <script setup>
-import { defineAsyncComponent, onMounted, watch } from 'vue'
+import { onMounted, watch } from 'vue'
 import { useScopedI18n } from '@/i18n/app'
 import { useRoute } from 'vue-router'
 
 import { useGlobalState } from '../store'
 import { api } from '../api'
-import { useIsMobile } from '../utils/composables'
-import { FullscreenExitOutlined } from '@vicons/material'
 
 import AddressBar from './index/AddressBar.vue';
 import MailBox from '../components/MailBox.vue';
-import SendBox from '../components/SendBox.vue';
-import AutoReply from './index/AutoReply.vue';
-import AccountSettings from './index/AccountSettings.vue';
-import Appearance from './common/Appearance.vue';
-import Webhook from './index/Webhook.vue';
 import Attachment from './index/Attachment.vue';
-import About from './common/About.vue';
-import SimpleIndex from './index/SimpleIndex.vue';
 
-const { loading, settings, openSettings, indexTab, globalTabplacement, useSimpleIndex } = useGlobalState()
+const { settings, openSettings } = useGlobalState()
 const message = useMessage()
 const route = useRoute()
-const isMobile = useIsMobile()
-
-const SendMail = defineAsyncComponent(() => {
-  loading.value = true;
-  return import('./index/SendMail.vue')
-    .finally(() => loading.value = false);
-});
 
 const { t } = useScopedI18n('views.Index')
 
@@ -43,14 +27,6 @@ const fetchMailData = async (limit, offset) => {
 
 const deleteMail = async (curMailId) => {
   await api.fetch(`/api/mails/${curMailId}`, { method: 'DELETE' });
-};
-
-const deleteSenboxMail = async (curMailId) => {
-  await api.fetch(`/api/sendbox/${curMailId}`, { method: 'DELETE' });
-};
-
-const fetchSenboxData = async (limit, offset) => {
-  return await api.fetch(`/api/sendbox?limit=${limit}&offset=${offset}`);
 };
 
 const saveToS3 = async (mail_id, filename, blob) => {
@@ -99,62 +75,82 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
-    <div v-if="useSimpleIndex">
-      <SimpleIndex />
+  <div class="page-shell">
+    <AddressBar />
+    <div v-if="settings.address" class="mail-layout">
+      <section class="mail-panel">
+        <header class="section-head">
+          <h2>{{ t('mailbox') }}</h2>
+        </header>
+        <div v-if="showMailIdQuery" class="mail-query">
+          <n-input-group>
+            <n-input v-model:value="mailIdQuery" />
+            <n-button @click="queryMail" type="primary" tertiary>
+              {{ t('query') }}
+            </n-button>
+          </n-input-group>
+        </div>
+        <MailBox :key="mailBoxKey" :showEMailTo="false" :showReply="false" :showSaveS3="openSettings.isS3Enabled"
+          :saveToS3="saveToS3" :enableUserDeleteEmail="openSettings.enableUserDeleteEmail"
+          :fetchMailData="fetchMailData" :deleteMail="deleteMail" :showFilterInput="true" />
+      </section>
     </div>
-    <div v-else>
-      <AddressBar />
-      <n-tabs v-if="settings.address" type="card" v-model:value="indexTab" :placement="globalTabplacement">
-        <template #prefix v-if="!isMobile">
-          <n-button @click="useSimpleIndex = true" tertiary size="small">
-            <template #icon>
-              <n-icon>
-                <FullscreenExitOutlined />
-              </n-icon>
-            </template>
-            {{ t('enterSimpleMode') }}
-          </n-button>
-        </template>
-        <n-tab-pane name="mailbox" :tab="t('mailbox')">
-          <div v-if="showMailIdQuery" style="margin-bottom: 10px;">
-            <n-input-group>
-              <n-input v-model:value="mailIdQuery" />
-              <n-button @click="queryMail" type="primary" tertiary>
-                {{ t('query') }}
-              </n-button>
-            </n-input-group>
-          </div>
-          <MailBox :key="mailBoxKey" :showEMailTo="false" :showReply="openSettings.enableSendMail" :showSaveS3="openSettings.isS3Enabled"
-            :saveToS3="saveToS3" :enableUserDeleteEmail="openSettings.enableUserDeleteEmail"
-            :fetchMailData="fetchMailData" :deleteMail="deleteMail" :showFilterInput="true" />
-        </n-tab-pane>
-        <n-tab-pane v-if="openSettings.enableSendMail" name="sendbox" :tab="t('sendbox')">
-          <SendBox :fetchMailData="fetchSenboxData" :enableUserDeleteEmail="openSettings.enableUserDeleteEmail"
-            :deleteMail="deleteSenboxMail" />
-        </n-tab-pane>
-        <n-tab-pane v-if="openSettings.enableSendMail" name="sendmail" :tab="t('sendmail')">
-          <SendMail />
-        </n-tab-pane>
-        <n-tab-pane name="accountSettings" :tab="t('accountSettings')">
-          <AccountSettings />
-        </n-tab-pane>
-        <n-tab-pane name="appearance" :tab="t('appearance')">
-          <Appearance :showUseSimpleIndex="true" />
-        </n-tab-pane>
-        <n-tab-pane v-if="openSettings.enableAutoReply" name="auto_reply" :tab="t('auto_reply')">
-          <AutoReply />
-        </n-tab-pane>
-        <n-tab-pane v-if="openSettings.enableWebhook" name="webhook" :tab="t('webhookSettings')">
-          <Webhook />
-        </n-tab-pane>
-        <n-tab-pane v-if="openSettings.isS3Enabled" name="s3_attachment" :tab="t('s3Attachment')">
-          <Attachment />
-        </n-tab-pane>
-        <n-tab-pane v-if="openSettings.enableIndexAbout" name="about" :tab="t('about')">
-          <About />
-        </n-tab-pane>
-      </n-tabs>
-    </div>
+    <section v-if="settings.address && openSettings.isS3Enabled" class="utility-section utility-wide">
+      <header class="section-head">
+        <h2>{{ t('s3Attachment') }}</h2>
+      </header>
+      <Attachment />
+    </section>
   </div>
 </template>
+
+<style scoped>
+.page-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.mail-layout {
+  display: block;
+}
+
+.mail-panel,
+.utility-section {
+  border: 1px solid var(--line);
+  background: var(--panel-strong);
+}
+
+.mail-panel {
+  padding: 18px;
+}
+
+.utility-section {
+  padding: 16px;
+}
+
+.utility-wide {
+  margin-top: 18px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.mail-query {
+  margin-bottom: 12px;
+}
+
+</style>

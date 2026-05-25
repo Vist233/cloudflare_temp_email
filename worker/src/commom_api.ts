@@ -46,8 +46,10 @@ api.get('/open_api/settings', async (c) => {
         "enableWebhook": utils.getBooleanValue(c.env.ENABLE_WEBHOOK),
         "isS3Enabled": isS3Enabled(c),
         "enableSendMail": isAnySendMailEnabled(c),
-        "version": CONSTANTS.VERSION,
-        "showGithub": !utils.getBooleanValue(c.env.DISABLE_SHOW_GITHUB),
+        // Keep the public settings payload quiet for product surfaces. Admin
+        // tooling can still inspect package / DB versions separately.
+        "version": "",
+        "showGithub": false,
         "disableAdminPasswordCheck": utils.getBooleanValue(c.env.DISABLE_ADMIN_PASSWORD_CHECK),
         "enableAddressPassword": utils.getBooleanValue(c.env.ENABLE_ADDRESS_PASSWORD),
         "enableAgentEmailInfo": utils.getBooleanValue(c.env.ENABLE_AGENT_EMAIL_INFO),

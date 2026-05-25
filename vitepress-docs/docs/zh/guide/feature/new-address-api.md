@@ -7,12 +7,15 @@
   - 使用 `Authorization: Bearer <jwt>` header
   - 用于访问 `/api/*` 接口（查看邮件、删除邮件等）
 
-- **用户 JWT**：通过 `/user_api/login` 或 `/user_api/register` 获得
+- **用户 JWT**：通过 `/user_api/login` 获得
   - 使用 `x-user-token: <jwt>` header
   - 用于访问 `/user_api/*` 接口（用户账户管理）
 
 **请勿混淆两种 JWT 的使用方式！**
 :::
+
+> [!NOTE]
+> 如果配置了 `ZHANG_AUTH_URL`，`tmpmail` 会把登录委托给外部认证中心。此时注册、邮箱验证、找回密码等入口应使用外部认证中心的托管页面；用户首次在 `tmpmail` 成功登录后，系统会自动创建本地用户并签发 `x-user-token`。
 
 ## 通过 admin API 新建邮箱地址
 

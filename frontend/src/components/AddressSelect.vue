@@ -218,7 +218,7 @@ watch([userJwt, isTelegram, () => settings.value.address], async () => {
             :loading="addressLoading" :placeholder="t('address')" @update:value="onAddressChange"
             class="address-select" />
         <slot name="actions" />
-        <n-button v-if="showCopy" class="address-copy" @click="copy" :size="size" tertiary type="primary">
+        <n-button v-if="showCopy" class="address-copy control-button" @click="copy" :size="size" tertiary>
             <n-icon :component="Copy" /> {{ t('copy') }}
         </n-button>
     </n-flex>
@@ -231,13 +231,17 @@ watch([userJwt, isTelegram, () => settings.value.address], async () => {
 }
 
 .address-select {
-    min-width: 220px;
-    max-width: 420px;
-    flex: 1 1 220px;
+    min-width: 320px;
+    max-width: 760px;
+    flex: 1 1 520px;
 }
 
 .address-copy {
     flex: 0 0 auto;
     white-space: nowrap;
+}
+
+.control-button {
+    color: #111111;
 }
 </style>

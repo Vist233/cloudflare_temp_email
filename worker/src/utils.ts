@@ -168,6 +168,28 @@ export const getRandomSubdomainDomains = (c: Context<HonoCustomType>): string[] 
     return getStringArray(c.env.RANDOM_SUBDOMAIN_DOMAINS);
 }
 
+export const getZhangAuthUrl = (c: Context<HonoCustomType>): string => {
+    return getStringValue(c.env.ZHANG_AUTH_URL).trim().replace(/\/+$/, "");
+}
+
+export const isExternalUserAuthEnabled = (c: Context<HonoCustomType>): boolean => {
+    return getZhangAuthUrl(c).length > 0;
+}
+
+export const getTmpmailOwnerEmail = (c: Context<HonoCustomType>): string => {
+    return getStringValue(c.env.TMPMAIL_OWNER_EMAIL).trim().toLowerCase();
+}
+
+export const getDefaultUserRoleName = (c: Context<HonoCustomType>): string => {
+    const configured = getStringValue(c.env.USER_DEFAULT_ROLE).trim();
+    return configured || "member";
+}
+
+export const getOwnerRoleName = (c: Context<HonoCustomType>): string => {
+    const configured = getStringValue(c.env.ADMIN_USER_ROLE).trim();
+    return configured || "owner";
+}
+
 export const getUserRoles = (c: Context<HonoCustomType>): UserRole[] => {
     if (!c.env.USER_ROLES) {
         return [];
@@ -372,10 +394,20 @@ export const getMaxAddressCount = async (
     settings: UserSettings
 ): Promise<number> => {
     if (!userRole) return settings.maxAddressCount;
+    const ownerRole = getOwnerRoleName(c);
+    const defaultUserRole = getDefaultUserRoleName(c);
     const roleConfigs = await getJsonSetting<RoleAddressConfig>(c, CONSTANTS.ROLE_ADDRESS_CONFIG_KEY);
-    if (!roleConfigs) return settings.maxAddressCount;
+    if (!roleConfigs) {
+        if (userRole === ownerRole) return 0;
+        if (userRole === defaultUserRole) return 2;
+        return settings.maxAddressCount;
+    }
     const roleMaxCount = roleConfigs[userRole]?.maxAddressCount;
-    if (typeof roleMaxCount !== 'number') return settings.maxAddressCount;
+    if (typeof roleMaxCount !== 'number') {
+        if (userRole === ownerRole) return 0;
+        if (userRole === defaultUserRole) return 2;
+        return settings.maxAddressCount;
+    }
     if (roleMaxCount < 0) return settings.maxAddressCount;
     return roleMaxCount;
 };

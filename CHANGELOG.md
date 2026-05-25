@@ -11,16 +11,24 @@
 ### Features
 
 - feat: |Frontend| 将邮箱地址凭证弹窗升级为“地址凭证与连接方式”，复用普通用户与 admin 创建邮箱结果弹窗；支持通过 `ENABLE_AGENT_EMAIL_INFO` 展示 AI Agent 接入信息，并通过 `SMTP_IMAP_PROXY_CONFIG` 展示 SMTP/IMAP 客户端连接信息
+- feat: |Auth| 支持通过 `ZHANG_AUTH_URL` 接入外部认证中心：`/user_api/login` 可转发到外部认证服务校验账号密码，成功后自动在本地 `tmpmail` 建立/同步用户，并继续签发本站 `x-user-token`；前端注册与找回密码入口可直接跳转到统一认证页面
 
 ### Bug Fixes
 
 - fix: |Admin| 管理员重置邮箱地址密码时改为前端 SHA-256 后提交，后端只接受并存储哈希值，避免该接口继续接收明文密码
 - fix: |Address| 管理员邮箱地址列表与用户绑定地址列表不再返回已存储的地址密码哈希值，避免列表接口暴露敏感字段
+- fix: |Address| 登录用户通过 `/api/new_address` 创建新邮箱时会自动写入 `users_address` 绑定表，避免“创建成功但用户地址管理为空”的分叉状态
 - fix: |AI 提取| 将 AI 邮件识别默认 Workers AI 模型切换为支持 JSON Mode 且未弃用的 `@cf/meta/llama-3.1-8b-instruct-fast`，并在文档中补充 `@cf/zai-org/glm-4.7-flash` 结构化输出兼容性提示（issue #1029）
 - fix: |CI| 将 GitHub Actions 与 e2e Docker 镜像统一升级到 Node.js 24，适配 Wrangler 4.90.0 的运行时要求
 - fix: |Frontend| 修复 iOS Safari 点击输入框时因移动端表单控件字号过小导致页面自动放大的问题
 
 ### Improvements
+
+- improve: |Frontend| 移除首页极简模式入口，收起发件箱、发信、自动回复、Webhook、About 等非核心收件标签页，让 `tmpmail` 首页聚焦为“收件箱 + 账户设置 + 外观偏好”
+- improve: |Quota| 默认用户角色在未配置额外角色配额时最多创建 2 个地址，`TMPMAIL_OWNER_EMAIL` 对应账户默认映射到 `ADMIN_USER_ROLE` 并保持无限地址
+- improve: |Frontend| 按统一设计语言重排首页与用户页：移除多层 card/tab 嵌套，将地址条、收件箱、账户设置、外观偏好改为分段式工具布局；同时下线未再挂载的 `SimpleIndex` 与旧 `BindAddress` 页面组件
+- improve: |Design| 将 `tmpmail` 的全局骨架、页头、页脚与输入控件圆角统一到纸面化设计语言：补充浅纸背景、细边框、编号标签与扁平方角控件，减少默认 Naive UI 模板感
+- improve: |Config| 公开 `open_api/settings` 不再暴露 GitHub 显示开关与版本号给主产品界面，统一由前端静默忽略这些展示型残留
 
 ## v1.8.0
 
@@ -763,3 +771,13 @@ Changes:
 DB changes
 
 - `db/2024-01-13-patch.sql`
+
+- 改进: |Design| 移除 00/01/02/03 编号标签，统一 tmpmail 品牌层级，将用户页重构为独立账户工作区，并让暗色主题对齐纸面/墨色设计系统。
+
+- 改进: |UX| 移除自动刷新控件，固定邮箱列表为 20/页，去掉上一封/下一封操作，把账户动作并入地址管理，并从主用户流程里收起发件箱暗示。
+- 改进: |Access| 移除站点访问密码，站点不再弹出访问口令；同时把 Admin 中残留的 Appearance 入口一并去掉。
+- 改进: |Access| 禁止未登录用户直接创建临时邮箱，邮箱创建现在必须先登录统一账户。
+
+- 改进: |IA| 用户页不再承担第二个收件箱职责，账户动作并入首页地址带，Admin 中 send-box 残留导航继续清理。
+
+- 改进: |Cleanup| 删除未再使用的 Appearance 与 UserMailBox 视图文件，确保页面职责与入口保持一致。

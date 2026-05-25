@@ -2,8 +2,21 @@ import { Context } from 'hono'
 
 import i18n from '../i18n';
 import { getBooleanValue, getJsonSetting, checkCfTurnstile, isAddressCountLimitReached } from '../utils';
-import { newAddress, getAddressPrefix, generateRandomName } from '../common'
+import { newAddress, getAddressPrefix, generateRandomName, commonGetUserRole } from '../common'
 import { CONSTANTS } from '../constants'
+
+const bindAddressToUser = async (
+    c: Context<HonoCustomType>,
+    userId: number,
+    addressId: number
+) => {
+    const bindResult = await c.env.DB.prepare(
+        `INSERT INTO users_address (user_id, address_id) VALUES (?, ?)`
+    ).bind(userId, addressId).run();
+    if (!bindResult.success) {
+        throw new Error("Failed to bind address to user");
+    }
+}
 
 const createNewAddress = async (c: Context<HonoCustomType>) => {
     const msgs = i18n.getMessagesbyContext(c);
@@ -18,9 +31,10 @@ const createNewAddress = async (c: Context<HonoCustomType>) => {
         return c.text(msgs.NewAddressDisabledMsg, 403)
     }
 
-    // 如果启用了禁止匿名创建，且用户已登录，检查地址数量限制
-    if (getBooleanValue(c.env.DISABLE_ANONYMOUS_USER_CREATE_EMAIL) && userPayload) {
-        const userRole = c.get("userRolePayload");
+    // Logged-in users should always respect their mailbox quota, even when
+    // anonymous mailbox creation is still allowed for guests.
+    if (userPayload) {
+        const userRole = c.get("userRolePayload") || (await commonGetUserRole(c, userPayload.user_id))?.role;
         if (await isAddressCountLimitReached(c, userPayload.user_id, userRole)) {
             return c.text(msgs.MaxAddressCountReachedMsg, 400)
         }
@@ -65,6 +79,16 @@ const createNewAddress = async (c: Context<HonoCustomType>) => {
             addressPrefix,
             sourceMeta
         });
+        if (userPayload?.user_id && res.address_id) {
+            try {
+                await bindAddressToUser(c, Number(userPayload.user_id), res.address_id);
+            } catch (error) {
+                await c.env.DB.prepare(
+                    `DELETE FROM address WHERE id = ?`
+                ).bind(res.address_id).run();
+                throw error;
+            }
+        }
         return c.json(res);
     } catch (e) {
         return c.text(`${msgs.FailedCreateAddressMsg}: ${(e as Error).message}`, 400)

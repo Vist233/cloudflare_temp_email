@@ -3,7 +3,7 @@ import { watch, onMounted, ref, onBeforeUnmount, computed } from "vue";
 import { useMessage } from 'naive-ui'
 import { useScopedI18n } from '@/i18n/app'
 import { useGlobalState } from '../store'
-import { CloudDownloadRound, ArrowBackIosNewFilled, ArrowForwardIosFilled, InboxRound } from '@vicons/material'
+import { CloudDownloadRound, InboxRound } from '@vicons/material'
 import { useIsMobile } from '../utils/composables'
 import { processItem } from '../utils/email-parser'
 import { utcToLocalDate } from '../utils';
@@ -60,10 +60,8 @@ const props = defineProps({
 const localFilterKeyword = ref('')
 
 const {
-  isDark, mailboxSplitSize, indexTab, loading, useUTCDate,
-  autoRefresh, configAutoRefreshInterval, sendMailModel
+  isDark, indexTab, loading, useUTCDate, sendMailModel
 } = useGlobalState()
-const autoRefreshInterval = ref(configAutoRefreshInterval.value)
 const rawData = ref([])
 const timer = ref(null)
 
@@ -88,48 +86,6 @@ const data = computed(() => {
   });
 })
 
-const canGoPrevMail = computed(() => {
-  if (!curMail.value) return false
-  const currentIndex = data.value.findIndex(mail => mail.id === curMail.value.id)
-  return currentIndex > 0 || page.value > 1
-})
-
-const canGoNextMail = computed(() => {
-  if (!curMail.value) return false
-  const currentIndex = data.value.findIndex(mail => mail.id === curMail.value.id)
-  return currentIndex < data.value.length - 1 || count.value > page.value * pageSize.value
-})
-
-const prevMail = async () => {
-  if (!canGoPrevMail.value) return
-  const currentIndex = data.value.findIndex(mail => mail.id === curMail.value.id)
-
-  if (currentIndex > 0) {
-    curMail.value = data.value[currentIndex - 1]
-  } else if (page.value > 1) {
-    page.value--
-    await refresh()
-    if (data.value.length > 0) {
-      curMail.value = data.value[data.value.length - 1]
-    }
-  }
-}
-
-const nextMail = async () => {
-  if (!canGoNextMail.value) return
-  const currentIndex = data.value.findIndex(mail => mail.id === curMail.value.id)
-
-  if (currentIndex < data.value.length - 1) {
-    curMail.value = data.value[currentIndex + 1]
-  } else if (count.value > page.value * pageSize.value) {
-    page.value++
-    await refresh()
-    if (data.value.length > 0) {
-      curMail.value = data.value[0]
-    }
-  }
-}
-
 const curMail = ref(null);
 
 const multiActionMode = ref(false)
@@ -139,29 +95,6 @@ const multiActionDownloadZip = ref({})
 const multiActionDeleteProgress = ref({ percentage: 0, tip: '0/0' })
 
 const { t } = useScopedI18n('components.MailBox')
-
-const setupAutoRefresh = async (autoRefresh) => {
-  // auto refresh every configAutoRefreshInterval seconds
-  autoRefreshInterval.value = configAutoRefreshInterval.value;
-  if (autoRefresh) {
-    clearInterval(timer.value);
-    timer.value = setInterval(async () => {
-      if (loading.value) return;
-      autoRefreshInterval.value--;
-      if (autoRefreshInterval.value <= 0) {
-        autoRefreshInterval.value = configAutoRefreshInterval.value;
-        await backFirstPageAndRefresh();
-      }
-    }, 1000)
-  } else {
-    clearInterval(timer.value)
-    timer.value = null
-  }
-}
-
-watch(autoRefresh, async (autoRefresh, old) => {
-  setupAutoRefresh(autoRefresh)
-}, { immediate: true })
 
 watch([page, pageSize], async ([page, pageSize], [oldPage, oldPageSize]) => {
   if (page !== oldPage || pageSize !== oldPageSize) {
@@ -232,10 +165,6 @@ const forwardMail = async () => {
   Object.assign(sendMailModel.value, buildForwardModel(curMail.value, t('forwardMail')));
   indexTab.value = 'sendmail';
 };
-
-const onSpiltSizeChange = (size) => {
-  mailboxSplitSize.value = size;
-}
 
 const saveToS3Proxy = async (filename, blob) => {
   await props.saveToS3(curMail.value.id, filename, blob);
@@ -318,6 +247,7 @@ const multiActionDownload = async () => {
 }
 
 onMounted(async () => {
+  pageSize.value = 20;
   await refresh();
 });
 
@@ -327,58 +257,51 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div>
-    <div v-if="!isMobile" class="left">
-      <div style="margin-bottom: 10px;">
-        <n-space v-if="multiActionMode" align="center">
-          <n-button @click="multiActionModeClick(false)" tertiary>
+  <div class="mailbox-shell">
+    <div v-if="!isMobile" class="mailbox-desktop">
+      <div class="mail-toolbar">
+        <n-space v-if="multiActionMode" align="center" :wrap="true">
+          <n-button @click="multiActionModeClick(false)" tertiary size="small">
             {{ t('cancelMultiAction') }}
           </n-button>
-          <n-button @click="multiActionSelectAll(true)" tertiary>
+          <n-button @click="multiActionSelectAll(true)" tertiary size="small">
             {{ t('selectAll') }}
           </n-button>
-          <n-button @click="multiActionSelectAll(false)" tertiary>
+          <n-button @click="multiActionSelectAll(false)" tertiary size="small">
             {{ t('unselectAll') }}
           </n-button>
           <n-popconfirm v-if="enableUserDeleteEmail" @positive-click="multiActionDeleteMail">
             <template #trigger>
-              <n-button tertiary type="error">{{ t('delete') }}</n-button>
+              <n-button tertiary type="error" size="small">{{ t('delete') }}</n-button>
             </template>
             {{ t('deleteMailTip') }}
           </n-popconfirm>
-          <n-button @click="multiActionDownload" tertiary type="info">
+          <n-button @click="multiActionDownload" tertiary type="info" size="small">
             <template #icon>
               <n-icon :component="CloudDownloadRound" />
             </template>
             {{ t('downloadMail') }}
           </n-button>
         </n-space>
-        <n-space v-else align="center">
-          <n-button @click="multiActionModeClick(true)" type="primary" tertiary>
+        <div v-else class="toolbar-main">
+          <n-space align="center" :wrap="true">
+          <n-button @click="multiActionModeClick(true)" tertiary size="small">
             {{ t('multiAction') }}
           </n-button>
-          <n-pagination v-model:page="page" v-model:page-size="pageSize" :item-count="count" :page-sizes="[20, 50, 100]"
-            show-size-picker />
-          <n-switch v-model:value="autoRefresh" :round="false">
-            <template #checked>
-              {{ t('refreshAfter', { msg: autoRefreshInterval }) }}
-            </template>
-            <template #unchecked>
-              {{ t('autoRefresh') }}
-            </template>
-          </n-switch>
-          <n-button @click="backFirstPageAndRefresh" type="primary" tertiary>
+          <n-pagination v-model:page="page" :item-count="count" />
+          </n-space>
+          <div class="toolbar-actions">
+          <n-button @click="backFirstPageAndRefresh" tertiary size="small">
             {{ t('refresh') }}
           </n-button>
           <n-input v-if="showFilterInput" v-model:value="localFilterKeyword"
-            :placeholder="t('keywordQueryTip')" style="width: 200px; display: flex; align-items: center;"
+            :placeholder="t('keywordQueryTip')" class="keyword-filter"
             clearable />
-        </n-space>
+          </div>
+        </div>
       </div>
-      <n-split class="left" direction="horizontal" :max="0.75" :min="0.25" :default-size="mailboxSplitSize"
-        :on-update:size="onSpiltSizeChange">
-        <template #1>
-          <div style="overflow: auto; min-height: 60vh; max-height: 100vh;">
+      <div class="mail-workbench">
+          <div class="mail-list-panel">
             <n-list hoverable clickable>
               <n-list-item v-for="row in data" v-bind:key="row.id" @click="() => clickRow(row)"
                 :class="mailItemClass(row)">
@@ -387,50 +310,31 @@ onBeforeUnmount(() => {
                 </template>
                 <n-thing :title="row.subject">
                   <template #description>
-                    <n-tag type="info">
+                    <div class="mail-meta">
+                    <n-tag type="info" size="small">
                       ID: {{ row.id }}
                     </n-tag>
-                    <n-tag type="info">
+                    <n-tag type="info" size="small">
                       {{ utcToLocalDate(row.created_at, useUTCDate) }}
                     </n-tag>
-                    <n-tag type="info">
-                      <n-ellipsis style="max-width: 240px;">
+                    <n-tag type="info" size="small">
+                      <n-ellipsis class="mail-meta-ellipsis">
                         {{ showEMailTo ? "FROM: " + row.source : row.source }}
                       </n-ellipsis>
                     </n-tag>
-                    <n-tag v-if="showEMailTo" type="info">
-                      <n-ellipsis style="max-width: 240px;">
+                    <n-tag v-if="showEMailTo" type="info" size="small">
+                      <n-ellipsis class="mail-meta-ellipsis">
                         TO: {{ row.address }}
                       </n-ellipsis>
                     </n-tag>
                     <AiExtractInfo :metadata="row.metadata" compact />
+                    </div>
                   </template>
                 </n-thing>
               </n-list-item>
             </n-list>
           </div>
-        </template>
-        <template #2>
-          <div v-if="curMail" style="margin: 8px;">
-            <n-flex justify="space-between">
-              <n-button @click="prevMail" :disabled="!canGoPrevMail" text size="small">
-                <template #icon>
-                  <n-icon>
-                    <ArrowBackIosNewFilled />
-                  </n-icon>
-                </template>
-                {{ t('prevMail') }}
-              </n-button>
-              <n-button @click="nextMail" :disabled="!canGoNextMail" text size="small" icon-placement="right">
-                <template #icon>
-                  <n-icon>
-                    <ArrowForwardIosFilled />
-                  </n-icon>
-                </template>
-                {{ t('nextMail') }}
-              </n-button>
-            </n-flex>
-          </div>
+          <div class="mail-content-panel">
           <n-card :bordered="false" embedded v-if="curMail" class="mail-item" :title="curMail.subject"
             style="overflow: auto; max-height: 100vh;">
             <MailContentRenderer :mail="curMail" :showEMailTo="showEMailTo"
@@ -444,50 +348,44 @@ onBeforeUnmount(() => {
               </template>
             </n-result>
           </n-card>
-        </template>
-      </n-split>
+          </div>
+      </div>
     </div>
-    <div class="left" v-else>
-      <n-space justify="space-around" align="center" :wrap="false" style="display: flex; align-items: center;">
-        <n-pagination v-model:page="page" v-model:page-size="pageSize" :item-count="count" simple size="small" />
-        <n-switch v-model:value="autoRefresh" size="small" :round="false">
-          <template #checked>
-            {{ t('refreshAfter', { msg: autoRefreshInterval }) }}
-          </template>
-          <template #unchecked>
-            {{ t('autoRefresh') }}
-          </template>
-        </n-switch>
-        <n-button @click="backFirstPageAndRefresh" tertiary size="small" type="primary">
+    <div class="mailbox-mobile" v-else>
+      <div class="mobile-toolbar">
+        <n-pagination v-model:page="page" :item-count="count" simple size="small" />
+        <n-button @click="backFirstPageAndRefresh" tertiary size="small">
           {{ t('refresh') }}
         </n-button>
-      </n-space>
-      <div v-if="showFilterInput" style="padding: 0 10px; margin-top: 8px; margin-bottom: 10px;">
+      </div>
+      <div v-if="showFilterInput" class="mobile-filter">
         <n-input v-model:value="localFilterKeyword"
           :placeholder="t('keywordQueryTip')" size="small" clearable />
       </div>
-      <div style="overflow: auto; min-height: 60vh; max-height: 100vh;">
+      <div class="mail-list-panel mobile">
         <n-list hoverable clickable>
           <n-list-item v-for="row in data" v-bind:key="row.id" @click="() => clickRow(row)">
             <n-thing :title="row.subject">
               <template #description>
-                <n-tag type="info">
+                <div class="mail-meta">
+                <n-tag type="info" size="small">
                   ID: {{ row.id }}
                 </n-tag>
-                <n-tag type="info">
+                <n-tag type="info" size="small">
                   {{ utcToLocalDate(row.created_at, useUTCDate) }}
                 </n-tag>
-                <n-tag type="info">
-                  <n-ellipsis style="max-width: 240px;">
+                <n-tag type="info" size="small">
+                  <n-ellipsis class="mail-meta-ellipsis">
                     {{ showEMailTo ? "FROM: " + row.source : row.source }}
                   </n-ellipsis>
                 </n-tag>
-                <n-tag v-if="showEMailTo" type="info">
-                  <n-ellipsis style="max-width: 240px;">
+                <n-tag v-if="showEMailTo" type="info" size="small">
+                  <n-ellipsis class="mail-meta-ellipsis">
                     TO: {{ row.address }}
                   </n-ellipsis>
                 </n-tag>
                 <AiExtractInfo :metadata="row.metadata" compact />
+                </div>
               </template>
             </n-thing>
           </n-list-item>
@@ -529,12 +427,77 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.left {
+.mailbox-shell,
+.mailbox-desktop,
+.mailbox-mobile {
+  display: grid;
+  gap: 12px;
   text-align: left;
 }
 
-.center {
-  text-align: center;
+.mail-toolbar,
+.mobile-toolbar {
+  display: grid;
+  gap: 10px;
+  align-items: center;
+}
+
+.toolbar-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.keyword-filter {
+  width: 200px;
+}
+
+.mail-workbench {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(0, 1.25fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.mail-list-panel,
+.mail-content-panel {
+  min-width: 0;
+}
+
+.mail-list-panel {
+  overflow: hidden;
+}
+
+.mail-list-panel.mobile {
+  min-height: 60vh;
+  max-height: 100vh;
+  overflow: auto;
+}
+
+.mail-content-panel {
+  display: grid;
+  gap: 8px;
+}
+
+.mail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+}
+
+.mail-meta-ellipsis {
+  max-width: min(220px, 40vw);
 }
 
 .overlay {
@@ -555,8 +518,28 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
+.mobile-filter {
+  padding: 0;
+}
+
 pre {
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+@media (max-width: 1280px) {
+  .toolbar-main {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 960px) {
+  .mail-workbench {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

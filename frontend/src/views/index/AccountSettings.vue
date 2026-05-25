@@ -17,11 +17,16 @@ const message = useMessage()
 const showLogout = ref(false)
 const showDeleteAccount = ref(false)
 const showClearInbox = ref(false)
-const showClearSentItems = ref(false)
 const showChangePassword = ref(false)
 const newPassword = ref('')
 const confirmPassword = ref('')
 const { locale, t } = useScopedI18n('views.index.AccountSettings')
+const props = defineProps({
+    inline: {
+        type: Boolean,
+        default: false,
+    },
+})
 
 const logout = async () => {
     jwt.value = '';
@@ -55,19 +60,6 @@ const clearInbox = async () => {
     }
 };
 
-const clearSentItems = async () => {
-    try {
-        await api.fetch(`/api/clear_sent_items`, {
-            method: 'DELETE'
-        });
-        message.success(t("success"));
-    } catch (error) {
-        message.error(error.message || "error");
-    } finally {
-        showClearSentItems.value = false;
-    }
-};
-
 const changePassword = async () => {
     if (newPassword.value !== confirmPassword.value) {
         message.error(t("passwordMismatch"));
@@ -92,30 +84,25 @@ const changePassword = async () => {
 
 <template>
     <div class="center" v-if="settings.address">
-        <n-card :bordered="false" embedded class="account-card">
-            <n-button @click="showAddressCredential = true" type="primary" secondary block strong>
+        <div class="account-card" :class="{ inline: props.inline }">
+            <n-button @click="showAddressCredential = true" class="action-button action-soft" :block="!props.inline" strong>
                 {{ t('showAddressCredential') }}
             </n-button>
-            <n-button v-if="openSettings?.enableAddressPassword" @click="showChangePassword = true" type="info" secondary block strong>
+            <n-button v-if="openSettings?.enableAddressPassword" @click="showChangePassword = true" class="action-button action-soft" :block="!props.inline" strong>
                 {{ t('changePassword') }}
             </n-button>
-            <n-button v-if="openSettings.enableUserDeleteEmail" @click="showClearInbox = true" type="warning" secondary
-                block strong>
+            <n-button v-if="openSettings.enableUserDeleteEmail" @click="showClearInbox = true" class="action-button action-warm"
+                :block="!props.inline" strong>
                 {{ t('clearInbox') }}
             </n-button>
-            <n-button v-if="openSettings.enableUserDeleteEmail" @click="showClearSentItems = true" type="warning"
-                secondary block strong>
-                {{ t('clearSentItems') }}
-            </n-button>
-            <n-button @click="showLogout = true" secondary block strong>
+            <n-button @click="showLogout = true" class="action-button" :block="!props.inline" strong>
                 {{ t('logout') }}
             </n-button>
-            <n-divider v-if="openSettings.enableUserDeleteEmail" />
-            <n-button v-if="openSettings.enableUserDeleteEmail" @click="showDeleteAccount = true" type="error" secondary
-                block strong>
+            <n-button v-if="openSettings.enableUserDeleteEmail" @click="showDeleteAccount = true" class="action-button action-danger"
+                :block="!props.inline" strong>
                 {{ t('deleteAccount') }}
             </n-button>
-        </n-card>
+        </div>
 
         <n-modal v-model:show="showLogout" preset="dialog" :title="t('logout')">
             <p>{{ t('logoutConfirm') }}</p>
@@ -141,15 +128,6 @@ const changePassword = async () => {
                 </n-button>
             </template>
         </n-modal>
-        <n-modal v-model:show="showClearSentItems" preset="dialog" :title="t('clearSentItems')">
-            <p>{{ t('clearSentItemsConfirm') }}</p>
-            <template #action>
-                <n-button :loading="loading" @click="clearSentItems" size="small" tertiary type="warning">
-                    {{ t('clearSentItems') }}
-                </n-button>
-            </template>
-        </n-modal>
-        
         <n-modal v-model:show="showChangePassword" preset="dialog" :title="t('changePassword')">
             <n-form :model="{ newPassword, confirmPassword }">
                 <n-form-item :label="t('newPassword')">
@@ -172,17 +150,43 @@ const changePassword = async () => {
 
 <style scoped>
 .center {
-    display: flex;
-    justify-content: center;
+    display: block;
 }
 
 .account-card {
-    max-width: 800px;
+    width: 100%;
     text-align: left;
+    display: grid;
+    gap: 10px;
+}
+
+.account-card.inline {
+    grid-template-columns: repeat(auto-fit, minmax(170px, max-content));
+    align-items: center;
+    justify-content: start;
+    gap: 10px;
 }
 
 .n-button {
-    margin-top: 14px;
+    margin: 0;
+}
+
+.action-button {
+    color: #111111;
+    border-color: var(--line);
+    background: var(--field);
+}
+
+.action-soft {
+    background: color-mix(in srgb, var(--signal) 20%, var(--paper));
+}
+
+.action-warm {
+    background: color-mix(in srgb, #f0b45a 18%, var(--paper));
+}
+
+.action-danger {
+    background: color-mix(in srgb, var(--proof) 14%, var(--paper));
 }
 
 </style>

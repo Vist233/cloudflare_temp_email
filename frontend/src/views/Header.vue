@@ -6,16 +6,14 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useIsMobile } from '../utils/composables'
 import {
     DarkModeFilled, LightModeFilled, MenuFilled,
-    AdminPanelSettingsFilled, MonitorHeartFilled,
-    KeyboardArrowDownOutlined, OpenInNewOutlined
+    AdminPanelSettingsFilled, MonitorHeartFilled
 } from '@vicons/material'
-import { GithubAlt, Language, User, Home } from '@vicons/fa'
+import { Language, User, Home } from '@vicons/fa'
 
 import { useGlobalState } from '../store'
 import { api } from '../api'
 import { getRouterPathWithLang, hashPassword } from '../utils'
 import { DEFAULT_LOCALE, isSupportedLocale, replaceLocaleInFullPath } from '../i18n/utils'
-import { getLocaleLabel, SUPPORTED_LOCALES } from '../i18n/locale-registry'
 import Turnstile from '../components/Turnstile.vue'
 import { NButton, NIcon } from 'naive-ui'
 
@@ -56,17 +54,9 @@ const authFunc = async () => {
     }
 }
 
-const languageOptions = SUPPORTED_LOCALES.map((locale) => ({
-    label: getLocaleLabel(locale),
-    value: locale,
-    key: locale,
-}))
-
-const currentLocaleLabel = computed(() => {
-    return languageOptions.find(opt => opt.value === locale.value)?.label || locale.value;
-});
-
 const { t, locale } = useScopedI18n('views.Header')
+const toggledLocale = computed(() => locale.value === 'zh' ? 'en' : 'zh')
+const toggledLocaleLabel = computed(() => locale.value === 'zh' ? 'ENG' : '中文')
 
 const changeLocale = async (lang) => {
     if (!isSupportedLocale(lang)) {
@@ -74,14 +64,15 @@ const changeLocale = async (lang) => {
     }
 
     const currentFullPath = route.fullPath;
-    const targetFullPath = replaceLocaleInFullPath(currentFullPath, lang);
+    const normalizedLang = lang === 'zh' ? 'zh' : 'en'
+    const targetFullPath = replaceLocaleInFullPath(currentFullPath, normalizedLang);
 
-    if (lang === locale.value && targetFullPath === currentFullPath) {
+    if (normalizedLang === locale.value && targetFullPath === currentFullPath) {
         showMobileMenu.value = false;
         return;
     }
 
-    if (lang === DEFAULT_LOCALE) {
+    if (normalizedLang === DEFAULT_LOCALE) {
         preferredLocale.value = DEFAULT_LOCALE;
     }
 
@@ -99,10 +90,8 @@ const changeLocale = async (lang) => {
         showMobileMenu.value = false;
     }
 
-    if (localeSwitched) preferredLocale.value = lang;
+    if (localeSwitched) preferredLocale.value = normalizedLang;
 }
-
-const version = import.meta.env.PACKAGE_VERSION ? `v${import.meta.env.PACKAGE_VERSION}` : "";
 
 const menuOptions = computed(() => [
     {
@@ -241,14 +230,16 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div>
-        <n-page-header>
+    <div class="header-shell">
+        <n-page-header class="page-header">
             <template #title>
-                <h3>{{ openSettings.title || t('title') }}</h3>
+                <div class="header-title">
+                    <h3>TMPMAIL</h3>
+                </div>
             </template>
             <template #avatar>
-                <div @click="logoClick">
-                    <n-avatar style="margin-left: 10px;" src="/logo.png" />
+                <div @click="logoClick" class="header-avatar">
+                    <n-avatar style="margin-left: 10px;" src="/logo.png" :round="false" />
                 </div>
             </template>
             <template #extra>
@@ -260,28 +251,12 @@ onMounted(async () => {
                         </template>
                         {{ t('menu') }}
                     </n-button>
-                    <n-dropdown v-if="!isMobile" :options="languageOptions" @select="changeLocale" trigger="click" class="header-locale-dropdown">
-                        <n-button text size="small" class="header-locale-button" style="padding: 0 10px;">
-                            <template #icon>
-                                <n-icon :component="Language" />
-                            </template>
-                            {{ currentLocaleLabel }}
-                            <n-icon :component="KeyboardArrowDownOutlined" style="margin-left: 4px;" />
-                        </n-button>
-                    </n-dropdown>
-                    <n-button
-                        v-if="!isMobile && openSettings.showGithub"
-                        text
-                        size="small"
-                        class="header-version-button"
-                        tag="a"
-                        target="_blank"
-                        href="https://github.com/dreamhunter2333/cloudflare_temp_email"
-                    >
+                    <n-button v-if="!isMobile" text size="small" class="header-locale-button" style="padding: 0 10px;"
+                        @click="changeLocale(toggledLocale)">
                         <template #icon>
-                            <n-icon :component="GithubAlt" />
+                            <n-icon :component="Language" />
                         </template>
-                        {{ version || 'Github' }}
+                        {{ toggledLocaleLabel }}
                     </n-button>
                 </n-space>
             </template>
@@ -290,24 +265,10 @@ onMounted(async () => {
             <n-drawer-content :title="t('menu')" closable>
                 <n-menu :options="menuOptions" />
                 <div class="mobile-menu-actions">
-                    <n-dropdown :options="languageOptions" @select="changeLocale" trigger="click" class="header-locale-dropdown">
-                        <button type="button" class="mobile-menu-utility-button">
-                            <n-icon :component="Language" />
-                            <span class="mobile-menu-action-label">{{ currentLocaleLabel }}</span>
-                            <n-icon :component="KeyboardArrowDownOutlined" class="mobile-menu-action-arrow" />
-                        </button>
-                    </n-dropdown>
-                    <a
-                        v-if="openSettings.showGithub"
-                        class="mobile-menu-utility-button"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href="https://github.com/dreamhunter2333/cloudflare_temp_email"
-                    >
-                        <n-icon :component="GithubAlt" />
-                        <span class="mobile-menu-action-label">{{ version || 'Github' }}</span>
-                        <n-icon :component="OpenInNewOutlined" class="mobile-menu-action-arrow" />
-                    </a>
+                    <button type="button" class="mobile-menu-utility-button" @click="changeLocale(toggledLocale)">
+                        <n-icon :component="Language" />
+                        <span class="mobile-menu-action-label">{{ toggledLocaleLabel }}</span>
+                    </button>
                 </div>
             </n-drawer-content>
         </n-drawer>
@@ -326,6 +287,28 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.header-shell {
+    padding: 10px 0 4px;
+}
+
+.page-header {
+    border-bottom: 1px solid var(--line-strong);
+    padding-bottom: 10px;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+}
+
+:deep(.n-page-header-header__title h3) {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+}
+
 .n-layout-header {
     display: flex;
     align-items: center;
@@ -373,7 +356,7 @@ onMounted(async () => {
     gap: 6px;
     margin-top: 12px;
     padding-top: 12px;
-    border-top: 1px solid rgba(128, 128, 128, 0.16);
+    border-top: 1px solid var(--line);
 }
 
 .mobile-menu-utility-button {
@@ -384,8 +367,8 @@ onMounted(async () => {
     width: 100%;
     min-width: 0;
     padding: 0 8px;
-    border: 0;
-    border-radius: 8px;
+    border: 1px solid var(--line);
+    border-radius: 0;
     background: transparent;
     color: inherit;
     font: inherit;
@@ -405,6 +388,22 @@ onMounted(async () => {
 .mobile-menu-action-arrow {
     flex: 0 0 auto;
     margin-left: 2px;
+}
+
+.header-avatar :deep(.n-avatar) {
+    margin-left: 10px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+}
+
+.header-extra :deep(.n-menu .n-menu-item-content) {
+    border-radius: 0;
+}
+
+.header-extra :deep(.n-button),
+.header-extra :deep(.n-menu-item-content),
+.mobile-menu-utility-button {
+    color: var(--ink);
 }
 
 .n-alert {
@@ -435,7 +434,7 @@ onMounted(async () => {
     }
 
     :deep(.n-page-header__title h3) {
-        max-width: calc(100vw - 136px);
+        max-width: calc(100vw - 156px);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;

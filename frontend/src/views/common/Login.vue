@@ -4,7 +4,6 @@ import { useScopedI18n } from '@/i18n/app'
 import { useRouter } from 'vue-router'
 import { NewLabelOutlined, EmailOutlined } from '@vicons/material'
 
-import AdminContact from '../common/AdminContact.vue'
 import Turnstile from '../../components/Turnstile.vue'
 
 import { useGlobalState } from '../../store'
@@ -248,12 +247,17 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div>
+    <div class="login-shell">
         <n-alert v-if="userSettings.user_email" :show-icon="false" :bordered="false" closable>
             <span>{{ t('bindUserInfo') }}</span>
         </n-alert>
-        <n-tabs v-if="openSettings.fetched" v-model:value="tabValue" size="large" justify-content="space-evenly">
-            <n-tab-pane name="signin" :tab="loginAndBindTag">
+        <div v-if="openSettings.fetched" class="login-panel">
+            <n-radio-group v-model:value="tabValue" class="login-mode" name="login-mode">
+                <n-radio-button value="signin">{{ loginAndBindTag }}</n-radio-button>
+                <n-radio-button v-if="showNewAddressTab" value="register">{{ t('getNewEmail') }}</n-radio-button>
+            </n-radio-group>
+
+            <section v-if="tabValue === 'signin'" class="login-section">
                 <n-form>
                     <div v-if="loginMethod === 'password'">
                         <n-form-item-row :label="t('email')" required>
@@ -282,7 +286,8 @@ onMounted(async () => {
                         </n-button>
                     </div>
 
-                    <n-button @click="login" :loading="loading" type="primary" block secondary strong>
+                    <div class="login-actions">
+                    <n-button @click="login" :loading="loading" type="primary" block strong>
                         <template #icon>
                             <n-icon :component="EmailOutlined" />
                         </template>
@@ -294,17 +299,18 @@ onMounted(async () => {
                         </template>
                         {{ t('getNewEmail') }}
                     </n-button>
+                    </div>
                 </n-form>
-            </n-tab-pane>
-            <n-tab-pane v-if="showNewAddressTab" name="register" :tab="t('getNewEmail')">
+            </section>
+            <section v-else-if="showNewAddressTab" class="login-section">
                 <n-spin :show="generateNameLoading">
                     <n-form>
-                        <span>
+                        <div class="helper-copy">
                             <p v-if="!openSettings.disableCustomAddressName">{{ t("getNewEmailTip1") +
                                 addressRegex.source }}</p>
                             <p v-if="!openSettings.disableCustomAddressName">{{ t("getNewEmailTip2") }}</p>
                             <p>{{ t("getNewEmailTip3") }}</p>
-                        </span>
+                        </div>
                         <n-button v-if="!openSettings.disableCustomAddressName" @click="generateName"
                             style="margin-bottom: 10px;">
                             {{ t('generateName') }}
@@ -329,7 +335,7 @@ onMounted(async () => {
                             </p>
                         </n-form-item-row>
                         <Turnstile v-model:value="cfToken" />
-                        <n-button type="primary" block secondary strong @click="newEmail" :loading="loading">
+                        <n-button type="primary" block strong @click="newEmail" :loading="loading">
                             <template #icon>
                                 <n-icon :component="NewLabelOutlined" />
                             </template>
@@ -337,25 +343,65 @@ onMounted(async () => {
                         </n-button>
                     </n-form>
                 </n-spin>
-            </n-tab-pane>
-            <n-tab-pane name="help" :tab="t('help')">
-                <n-alert :show-icon="false" :bordered="false">
-                    <span>{{ t('pleaseGetNewEmail') }}</span>
-                </n-alert>
-                <AdminContact />
-            </n-tab-pane>
-        </n-tabs>
+            </section>
+        </div>
     </div>
 </template>
 
-
 <style scoped>
-.n-alert {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    text-align: center;
+.login-shell {
+    display: grid;
+    gap: 12px;
 }
 
+.login-panel {
+    display: grid;
+    gap: 16px;
+}
+
+.login-mode {
+    width: 100%;
+}
+
+.login-mode :deep(.n-radio-group__splitor) {
+    display: none;
+}
+
+.login-mode :deep(.n-radio-button) {
+    flex: 1 1 0;
+}
+
+.login-mode :deep(.n-radio-button__state-border),
+.login-mode :deep(.n-radio-button__state-border-left) {
+    border-radius: 0;
+}
+
+.login-section {
+    display: grid;
+    gap: 12px;
+}
+
+.switch-login-button {
+    display: flex;
+    justify-content: flex-start;
+    margin: 4px 0 10px;
+}
+
+.login-actions {
+    display: grid;
+    gap: 10px;
+}
+
+.helper-copy p {
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+</style>
+
+
+<style scoped>
 .n-form .n-button {
     margin-top: 10px;
 }

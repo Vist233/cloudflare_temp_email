@@ -13,6 +13,7 @@ import AddressManagement from '../user/AddressManagement.vue'
 import { getRouterPathWithLang } from '../../utils'
 import AddressSelect from '../../components/AddressSelect.vue'
 import AddressCredentialModal from '../../components/AddressCredentialModal.vue'
+import AccountSettings from './AccountSettings.vue'
 
 const router = useRouter()
 
@@ -35,46 +36,65 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div>
+    <div class="address-shell">
         <n-card :bordered="false" embedded v-if="!settings.fetched">
             <n-skeleton style="height: 50vh" />
         </n-card>
-        <div v-else-if="settings.address">
-            <n-alert type="info" :show-icon="false" :bordered="false">
-                <AddressSelect>
+        <section v-else-if="settings.address" class="address-active">
+            <div class="section-head">
+                <div class="address-copyblock">
+                    <h1>{{ settings.address }}</h1>
+                    <p>{{ t('addressManage') }}</p>
+                </div>
+            </div>
+            <div class="control-deck">
+                <AddressSelect class="address-actions">
                     <template #actions>
-                        <n-button class="address-manage" size="small" tertiary type="primary"
+                        <n-button class="address-manage control-button" size="small" tertiary :round="false"
                             @click="showAddressManage = true">
                             <n-icon :component="ExchangeAlt" />
                             {{ t('addressManage') }}
                         </n-button>
                     </template>
                 </AddressSelect>
-            </n-alert>
-        </div>
+                <AccountSettings inline />
+            </div>
+        </section>
         <div v-else-if="isTelegram">
             <TelegramAddress />
         </div>
-        <div v-else-if="userJwt" class="center">
-            <n-card :bordered="false" embedded style="max-width: 900px; width: 100%;">
+        <section v-else-if="userJwt" class="empty-state large">
+            <header class="section-head">
+                <div>
+                    <h1>{{ t('addressManage') }}</h1>
+                    <p>{{ t('userLogin') }}</p>
+                </div>
+            </header>
+            <div class="section-body">
                 <AddressManagement />
-            </n-card>
-        </div>
-        <div v-else class="center">
-            <n-card :bordered="false" embedded style="max-width: 600px;">
+            </div>
+        </section>
+        <section v-else class="empty-state">
+            <header class="section-head">
+                <div>
+                    <h1>{{ t('addressManage') }}</h1>
+                    <p>{{ t('userLogin') }}</p>
+                </div>
+            </header>
+            <div class="section-body">
                 <n-alert v-if="jwt" type="warning" :show-icon="false" :bordered="false" closable>
                     <span>{{ t('fetchAddressError') }}</span>
                 </n-alert>
                 <Login />
                 <n-divider />
-                <n-button @click="onUserLogin" type="primary" block secondary strong>
+                <n-button @click="onUserLogin" type="primary" block strong :round="false">
                     <template #icon>
                         <n-icon :component="User" />
                     </template>
                     {{ t('userLogin') }}
                 </n-button>
-            </n-card>
-        </div>
+            </div>
+        </section>
         <AddressCredentialModal v-model:show="showAddressCredential" :address="settings.address" :jwt="jwt"
             :address-password="addressPassword" />
         <n-modal v-model:show="showAddressManage" preset="card" :title="t('addressManage')"
@@ -87,27 +107,78 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.n-alert {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-.n-card {
-    margin-top: 10px;
-}
-
-.center {
+.address-shell {
     display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.address-active,
+.empty-state {
+    border: 1px solid var(--line);
+    background: var(--panel-strong);
+    padding: 18px;
+}
+
+.empty-state.large {
+    padding: 18px;
+}
+
+.section-head {
+    display: block;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+}
+
+.address-copyblock {
+    max-width: min(100%, 980px);
+}
+
+.section-head h1 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.section-head p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--muted);
+}
+
+.control-deck,
+.address-actions,
+.section-body {
     text-align: left;
-    place-items: center;
-    justify-content: center;
-    margin: 20px;
 }
 
-.address-manage {
-    flex: 0 0 auto;
-    white-space: nowrap;
+.control-deck {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
 }
 
+.address-actions {
+    flex: 1 1 560px;
+    min-width: min(100%, 560px);
+}
+
+.control-button {
+    color: #111111;
+}
+
+@media (max-width: 720px) {
+    .control-deck {
+        align-items: stretch;
+    }
+
+    .address-actions {
+        width: 100%;
+        min-width: 0;
+    }
+}
 </style>

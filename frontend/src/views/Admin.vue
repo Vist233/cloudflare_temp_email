@@ -10,7 +10,6 @@ import Turnstile from '../components/Turnstile.vue'
 
 import SenderAccess from './admin/SenderAccess.vue'
 import Statistics from "./admin/Statistics.vue"
-import SendBox from './admin/SendBox.vue';
 import Account from './admin/Account.vue';
 import CreateAccount from './admin/CreateAccount.vue';
 import AccountSettings from './admin/AccountSettings.vue';
@@ -23,7 +22,6 @@ import MailsUnknow from './admin/MailsUnknow.vue';
 import About from './common/About.vue';
 import Maintenance from './admin/Maintenance.vue';
 import DatabaseManager from './admin/DatabaseManager.vue';
-import Appearance from './common/Appearance.vue';
 import Telegram from './admin/Telegram.vue';
 import Webhook from './admin/Webhook.vue';
 import MailWebhook from './admin/MailWebhook.vue';
@@ -184,9 +182,6 @@ onMounted(async () => {
           <n-tab-pane name="unknow" :tab="t('unknow')">
             <MailsUnknow />
           </n-tab-pane>
-          <n-tab-pane name="sendBox" :tab="t('sendBox')">
-            <SendBox />
-          </n-tab-pane>
           <n-tab-pane name="sendMail" :tab="t('sendMail')">
             <SendMail />
           </n-tab-pane>
@@ -213,9 +208,6 @@ onMounted(async () => {
             <Maintenance />
           </n-tab-pane>
         </n-tabs>
-      </n-tab-pane>
-      <n-tab-pane name="appearance" :tab="t('appearance')">
-        <Appearance />
       </n-tab-pane>
       <n-tab-pane name="adminAccount" :tab="t('adminAccount')">
         <div style="display: flex; justify-content: center; padding: 20px;">

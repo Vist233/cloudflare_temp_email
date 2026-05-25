@@ -11,8 +11,7 @@ import { MenuFilled } from '@vicons/material'
 import AddressCredentialModal from '../../components/AddressCredentialModal.vue'
 
 const {
-    loading, adminTab, openSettings,
-    adminMailTabAddress, adminSendBoxTabAddress
+    loading, adminTab, openSettings, adminMailTabAddress
 } = useGlobalState()
 const message = useMessage()
 
@@ -23,7 +22,6 @@ const curEmailCredential = ref("")
 const curEmailAddress = ref("")
 const curDeleteAddressId = ref(0);
 const curClearInboxAddressId = ref(0);
-const curClearSentItemsAddressId = ref(0);
 const showResetPassword = ref(false);
 const curResetPasswordAddressId = ref(0);
 const newPassword = ref('');
@@ -47,7 +45,6 @@ const page = ref(1)
 const pageSize = ref(20)
 const showDeleteAccount = ref(false)
 const showClearInbox = ref(false)
-const showClearSentItems = ref(false)
 
 const showCredential = async (row) => {
     try {
@@ -85,20 +82,6 @@ const clearInbox = async () => {
         message.error(error.message || "error");
     } finally {
         showClearInbox.value = false
-    }
-}
-
-const clearSentItems = async () => {
-    try {
-        await api.fetch(`/admin/clear_sent_items/${curClearSentItemsAddressId.value}`, {
-            method: 'DELETE'
-        });
-        message.success(t("success"));
-        await fetchData()
-    } catch (error) {
-        message.error(error.message || "error");
-    } finally {
-        showClearSentItems.value = false
     }
 }
 
@@ -201,17 +184,6 @@ const multiActionClearInbox = async () => {
         }),
         title: t('multiClearInbox') + ' ' + t('success'),
         operationName: 'ClearInbox'
-    });
-}
-
-const multiActionClearSentItems = async () => {
-    await executeBatchOperation({
-        shouldSkip: (address) => address.send_count <= 0,
-        apiCall: (id) => api.fetch(`/admin/clear_sent_items/${id}`, {
-            method: 'DELETE'
-        }),
-        title: t('multiClearSentItems') + ' ' + t('success'),
-        operationName: 'ClearSentItems'
     });
 }
 
@@ -331,34 +303,6 @@ const columns = computed(() => [
         }
     },
     {
-        title: t('send_count'),
-        key: "send_count",
-        sorter: true,
-        sortOrder: sortBy.value === 'send_count' ? sortOrder.value : false,
-        render(row) {
-            return h(NButton,
-                {
-                    text: true,
-                    onClick: () => {
-                        if (row.send_count > 0) {
-                            adminSendBoxTabAddress.value = row.name;
-                            adminTab.value = "sendBox";
-                        }
-                    }
-                },
-                {
-                    icon: () => h(NBadge, {
-                        value: row.send_count,
-                        'show-zero': true,
-                        max: 99,
-                        type: "success"
-                    }),
-                    default: () => row.send_count > 0 ? t('viewSendBox') : ""
-                }
-            )
-        }
-    },
-    {
         title: t('actions'),
         key: 'actions',
         render(row) {
@@ -398,19 +342,6 @@ const columns = computed(() => [
                                         {
                                             text: true,
                                             onClick: () => {
-                                                adminSendBoxTabAddress.value = row.name;
-                                                adminTab.value = "sendBox";
-                                            }
-                                        },
-                                        { default: () => t('viewSendBox') }
-                                    ),
-                                    show: row.send_count > 0
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
                                                 curClearInboxAddressId.value = row.id;
                                                 showClearInbox.value = true;
                                             }
@@ -418,19 +349,6 @@ const columns = computed(() => [
                                         { default: () => t('clearInbox') }
                                     ),
                                     show: row.mail_count > 0
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curClearSentItemsAddressId.value = row.id;
-                                                showClearSentItems.value = true;
-                                            }
-                                        },
-                                        { default: () => t('clearSentItems') }
-                                    ),
-                                    show: row.send_count > 0
                                 },
                                 {
                                     label: () => h(NButton,
@@ -495,15 +413,6 @@ onMounted(async () => {
                 </n-button>
             </template>
         </n-modal>
-        <n-modal v-model:show="showClearSentItems" preset="dialog" :title="t('clearSentItems')">
-            <p>{{ t('clearSentItemsTip') }}</p>
-            <template #action>
-                <n-button :loading="loading" @click="clearSentItems" size="small" tertiary type="error">
-                    {{ t('clearSentItems') }}
-                </n-button>
-            </template>
-        </n-modal>
-
         <n-modal v-model:show="showResetPassword" preset="dialog" :title="t('resetPassword')">
             <n-form-item :label="t('newPassword')">
                 <n-input v-model:value="newPassword" type="password" placeholder="" show-password-on="click"
@@ -541,12 +450,6 @@ onMounted(async () => {
                     <n-button tertiary type="warning">{{ t('multiClearInbox') }}</n-button>
                 </template>
                 {{ t('multiClearInboxTip') }}
-            </n-popconfirm>
-            <n-popconfirm @positive-click="multiActionClearSentItems">
-                <template #trigger>
-                    <n-button tertiary type="warning">{{ t('multiClearSentItems') }}</n-button>
-                </template>
-                {{ t('multiClearSentItemsTip') }}
             </n-popconfirm>
             <n-tag type="info">
                 {{ t('selectedItems') }}: {{ selectedCount }}

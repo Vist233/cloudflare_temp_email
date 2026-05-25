@@ -119,6 +119,10 @@ type Bindings = {
 
     // E2E testing
     E2E_TEST_MODE: string | boolean | undefined
+
+    // external auth
+    ZHANG_AUTH_URL: string | undefined
+    TMPMAIL_OWNER_EMAIL: string | undefined
 }
 
 type JwtPayload = {
@@ -129,6 +133,7 @@ type JwtPayload = {
 type UserPayload = {
     user_email: string
     user_id: number
+    user_role?: string
     exp: number
     iat: number
 }

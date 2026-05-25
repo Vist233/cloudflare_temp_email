@@ -11,16 +11,24 @@
 ### Features
 
 - feat: |Frontend| Upgrade the address credential dialog to "Address Credentials & Connection Methods" and reuse it for both normal users and admin-created addresses; support showing AI Agent access via `ENABLE_AGENT_EMAIL_INFO` and SMTP/IMAP client settings via `SMTP_IMAP_PROXY_CONFIG`
+- feat: |Auth| Support an external auth center via `ZHANG_AUTH_URL`: `/user_api/login` can delegate email/password verification to the external auth service, auto-provision or sync the local tmpmail user on success, and still issue the local `x-user-token`; the frontend can send sign-up and password-recovery traffic directly to the hosted auth pages
 
 ### Bug Fixes
 
 - fix: |Admin| Hash address passwords in the frontend before admin reset requests, and make the backend accept and store only the hash instead of plaintext
 - fix: |Address| Stop returning stored address password hashes from the admin address list and user bound-address list APIs to avoid exposing sensitive fields
+- fix: |Address| Auto-bind newly created mailboxes into `users_address` when a signed-in user creates them through `/api/new_address`, so address creation and the user address manager no longer drift apart
 - fix: |AI Extract| Switch the default Workers AI model for AI email recognition to the JSON Mode-compatible, non-deprecated `@cf/meta/llama-3.1-8b-instruct-fast`, and document structured-output compatibility guidance for `@cf/zai-org/glm-4.7-flash` (issue #1029)
 - fix: |CI| Upgrade GitHub Actions and e2e Docker images to Node.js 24 to satisfy Wrangler 4.90.0 runtime requirements
 - fix: |Frontend| Prevent iOS Safari from auto-zooming the page when focusing mobile form controls with small font sizes
 
 ### Improvements
+
+- improve: |Frontend| Remove the home-page simple mode entry and hide sendbox, send mail, auto reply, webhook, and about tabs from the normal user surface so tmpmail stays focused on inbox, account settings, and appearance
+- improve: |Quota| When no explicit role quota is configured, the default user role is capped at 2 addresses, while the account matching `TMPMAIL_OWNER_EMAIL` is auto-mapped to `ADMIN_USER_ROLE` and stays unlimited
+- improve: |Frontend| Recompose the home page and user page into the shared quiet tool aesthetic: fewer nested cards/tabs, clearer sectional layout for address, inbox, account, and appearance, and removal of the now-unmounted `SimpleIndex` and legacy `BindAddress` components
+- improve: |Design| Align the global shell, header, footer, and control shapes with the paper-based design language by adding the off-white page field, thin rules, index labels, and square-edged controls instead of the default Naive UI feel
+- improve: |Config| Keep the public `open_api/settings` payload quiet by suppressing GitHub-display and version signals from the product surface, leaving version inspection to admin-specific tooling
 
 ## v1.8.0
 
@@ -756,3 +764,13 @@ Changes:
 DB changes
 
 - `db/2024-01-13-patch.sql`
+
+- improve: |Design| Remove section number markers, unify tmpmail branding, rebuild the user workspace as a distinct account shell, and align dark mode tokens with the public paper/ink system.
+
+- improve: |UX| Remove auto-refresh controls, lock mailbox pagination to 20 per page, remove mail prev/next controls, merge account actions into address management, and hide send-box affordances from the main user flow.
+- improve: |Access| Remove the site access password so tmpmail no longer prompts for a visitor code, and finish removing the leftover Appearance entry from Admin.
+- improve: |Access| Disable anonymous mailbox creation so users must sign in before creating a temp mailbox.
+
+- improve: |IA| Remove the duplicate inbox role from /user, merge account actions into the home address band, and continue clearing admin send-box residue.
+
+- improve: |Cleanup| Delete the now-unused Appearance and UserMailBox view files so the codebase matches the new page responsibilities.

@@ -181,7 +181,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div>
+    <div class="address-management">
         <n-modal v-model:show="showTranferAddress" preset="dialog" :title="t('transferAddress')">
             <span>
                 <p>{{ t("transferAddressTip") }}</p>
@@ -194,20 +194,46 @@ onMounted(async () => {
                 </n-button>
             </template>
         </n-modal>
-        <n-tabs type="segment">
-            <n-tab-pane name="address" :tab="t('address')">
-                <div class="address-table-scroll">
-                    <n-data-table :columns="columns" :data="data" :bordered="false" embedded />
-                </div>
-            </n-tab-pane>
-            <n-tab-pane name="create_or_bind" :tab="t('create_or_bind')">
-                <Login />
-            </n-tab-pane>
-        </n-tabs>
+        <section class="subsection">
+            <header class="subsection-head">
+                <h3>{{ t('address') }}</h3>
+            </header>
+            <div v-if="data.length" class="address-table-scroll">
+                <n-data-table :columns="columns" :data="data" :bordered="false" embedded />
+            </div>
+            <n-empty v-else size="small" />
+        </section>
+        <section class="subsection">
+            <header class="subsection-head">
+                <h3>{{ t('create_or_bind') }}</h3>
+            </header>
+            <Login />
+        </section>
     </div>
 </template>
 
 <style scoped>
+.address-management {
+    display: grid;
+    gap: 16px;
+}
+
+.subsection {
+    display: grid;
+    gap: 12px;
+}
+
+.subsection-head {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+}
+
+.subsection-head h3 {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.3;
+}
+
 .n-data-table {
     min-width: 640px;
 }

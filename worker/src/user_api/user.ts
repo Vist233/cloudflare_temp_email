@@ -2,13 +2,135 @@ import { Context } from 'hono';
 import { Jwt } from 'hono/utils/jwt'
 
 import i18n from '../i18n';
-import utils, { checkCfTurnstile, getJsonSetting, checkUserPassword, getUserRoles, getStringValue } from "../utils"
+import utils, {
+    checkCfTurnstile,
+    getJsonSetting,
+    checkUserPassword,
+    getUserRoles,
+    getStringValue,
+    getZhangAuthUrl,
+    isExternalUserAuthEnabled,
+    getTmpmailOwnerEmail,
+    getOwnerRoleName,
+    getDefaultUserRoleName,
+} from "../utils"
 import { CONSTANTS } from "../constants";
 import { GeoData, UserInfo, UserSettings } from "../models";
 import { sendMail } from "../mails_api/send_mail_api";
 
+const buildHostedAuthUrl = (baseUrl: string, path: string): string => {
+    const url = new URL(path, `${baseUrl}/`);
+    return url.toString();
+}
+
+const ensureLocalUserFromExternalAuth = async (
+    c: Context<HonoCustomType>,
+    email: string,
+): Promise<number> => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const reqIp = c.req.raw.headers.get("cf-connecting-ip");
+    const geoData = new GeoData(reqIp, c.req.raw.cf as any);
+    const userInfo = new UserInfo(geoData, normalizedEmail);
+    const placeholderPassword = `external-auth:${normalizedEmail}`;
+
+    await c.env.DB.prepare(
+        `INSERT INTO users (user_email, password, user_info)`
+        + ` VALUES (?, ?, ?)`
+        + ` ON CONFLICT(user_email) DO UPDATE SET user_info = ?, updated_at = datetime('now')`
+    ).bind(
+        normalizedEmail,
+        placeholderPassword,
+        JSON.stringify(userInfo),
+        JSON.stringify(userInfo),
+    ).run();
+
+    const userId = await c.env.DB.prepare(
+        `SELECT id FROM users WHERE user_email = ?`
+    ).bind(normalizedEmail).first<number | undefined | null>("id");
+    if (!userId) {
+        throw new Error("Failed to provision local tmpmail user");
+    }
+
+    const ownerEmail = getTmpmailOwnerEmail(c);
+    const ownerRole = getOwnerRoleName(c);
+    const defaultRole = getDefaultUserRoleName(c);
+    const existingRole = await c.env.DB.prepare(
+        `SELECT role_text FROM user_roles WHERE user_id = ?`
+    ).bind(userId).first<string | undefined | null>("role_text");
+
+    if (normalizedEmail === ownerEmail) {
+        if (existingRole !== ownerRole) {
+            await c.env.DB.prepare(
+                `INSERT INTO user_roles (user_id, role_text)`
+                + ` VALUES (?, ?)`
+                + ` ON CONFLICT(user_id) DO UPDATE SET role_text = ?, updated_at = datetime('now')`
+            ).bind(userId, ownerRole, ownerRole).run();
+        }
+    } else if (!existingRole) {
+        await c.env.DB.prepare(
+            `INSERT INTO user_roles (user_id, role_text)`
+            + ` VALUES (?, ?)`
+            + ` ON CONFLICT(user_id) DO NOTHING`
+        ).bind(userId, defaultRole).run();
+    }
+
+    return userId;
+}
+
+const loginViaZhangAuth = async (
+    c: Context<HonoCustomType>,
+    email: string,
+    password: string,
+): Promise<{ userId: number; email: string }> => {
+    const baseUrl = getZhangAuthUrl(c);
+    const response = await fetch(buildHostedAuthUrl(baseUrl, "/v1/login"), {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+        },
+        body: JSON.stringify({
+            email,
+            password,
+        }),
+    });
+
+    const data = await response.json().catch(() => null as any);
+    if (!response.ok || !data?.ok) {
+        const errorMessage = data?.error?.message || data?.message || "External authentication failed";
+        throw new Error(errorMessage);
+    }
+
+    const normalizedEmail = (data?.data?.user?.email || email).trim().toLowerCase();
+    const userId = await ensureLocalUserFromExternalAuth(c, normalizedEmail);
+    return {
+        userId,
+        email: normalizedEmail,
+    };
+}
+
+const issueLocalUserJwt = async (
+    c: Context<HonoCustomType>,
+    email: string,
+    userId: number,
+): Promise<string> => {
+    const userRole = await c.env.DB.prepare(
+        `SELECT role_text FROM user_roles WHERE user_id = ?`
+    ).bind(userId).first<string | undefined | null>("role_text");
+    return Jwt.sign({
+        user_email: email,
+        user_id: userId,
+        user_role: userRole || undefined,
+        exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+        iat: Math.floor(Date.now() / 1000),
+    }, c.env.JWT_SECRET, "HS256");
+}
+
 export default {
     verifyCode: async (c: Context<HonoCustomType>) => {
+        if (isExternalUserAuthEnabled(c)) {
+            const baseUrl = getZhangAuthUrl(c);
+            return c.text(`Registration verification is handled by ${buildHostedAuthUrl(baseUrl, "/sign-up")}`, 409);
+        }
         const { email, cf_token } = await c.req.json();
         const msgs = i18n.getMessagesbyContext(c);
         // check cf turnstile
@@ -69,6 +191,10 @@ export default {
         })
     },
     register: async (c: Context<HonoCustomType>) => {
+        if (isExternalUserAuthEnabled(c)) {
+            const baseUrl = getZhangAuthUrl(c);
+            return c.text(`Registration is handled by ${buildHostedAuthUrl(baseUrl, "/sign-up")}`, 409);
+        }
         const value = await getJsonSetting(c, CONSTANTS.USER_SETTINGS_KEY);
         const settings = new UserSettings(value)
         const msgs = i18n.getMessagesbyContext(c);
@@ -193,6 +319,16 @@ export default {
                 return c.text(msgs.TurnstileCheckFailedMsg, 400)
             }
         }
+        if (isExternalUserAuthEnabled(c)) {
+            try {
+                const externalUser = await loginViaZhangAuth(c, email, password);
+                const jwt = await issueLocalUserJwt(c, externalUser.email, externalUser.userId);
+                return c.json({ jwt });
+            } catch (error) {
+                const message = error instanceof Error ? error.message : msgs.InvalidEmailOrPasswordMsg;
+                return c.text(message, 400);
+            }
+        }
         const { id: user_id, password: dbPassword } = await c.env.DB.prepare(
             `SELECT id, password FROM users where user_email = ?`
         ).bind(email).first() || {};
@@ -204,13 +340,7 @@ export default {
             return c.text(msgs.InvalidEmailOrPasswordMsg, 400)
         }
         // create jwt
-        const jwt = await Jwt.sign({
-            user_email: email,
-            user_id: user_id,
-            // 90 days expire in seconds
-            exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
-            iat: Math.floor(Date.now() / 1000),
-        }, c.env.JWT_SECRET, "HS256")
+        const jwt = await issueLocalUserJwt(c, email, user_id)
         return c.json({
             jwt: jwt
         })

@@ -120,6 +120,8 @@
 
 | Variable Name                         | Type      | Description                                                                                          | Example   |
 | ------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------- | --------- |
+| `ZHANG_AUTH_URL`                      | Text      | Base URL of an external auth center. When set, `/user_api/login` delegates password verification to that auth service, and frontend sign-up / password-recovery actions point to its hosted pages | `https://auth.example.com` |
+| `TMPMAIL_OWNER_EMAIL`                 | Text      | Primary tmpmail account email. In the light-integration flow, this email is auto-mapped to `ADMIN_USER_ROLE` and defaults to unlimited address quota | `owner@example.com` |
 | `USER_DEFAULT_ROLE`                   | Text      | Default role for new users, only effective when email verification is enabled                        | `vip`     |
 | `ADMIN_USER_ROLE`                     | Text      | Admin role configuration, if user role equals ADMIN_USER_ROLE, user can access admin console         | `admin`   |
 | `USER_ROLES`                          | JSON      | -                                                                                                    | See below |
@@ -130,6 +132,7 @@
 >
 > - If `domains` is empty, `DEFAULT_DOMAINS` will be used
 > - If prefix is null, the default prefix will be used, if prefix is an empty string, no prefix will be used
+> - When `ZHANG_AUTH_URL` is configured and you do not set an explicit role quota, the account matching `TMPMAIL_OWNER_EMAIL` is mapped to `ADMIN_USER_ROLE` and stays unlimited; other first-time users coming from the unified auth flow land on `USER_DEFAULT_ROLE` and default to 2 addresses
 >
 > When deploying through UI, configure `USER_ROLES` in this format: `[{"domains":["awsl.uk","dreamhunter2333.xyz"],"role":"vip","prefix":"vip"},{"domains":["awsl.uk","dreamhunter2333.xyz"],"role":"admin","prefix":""}]`
 >

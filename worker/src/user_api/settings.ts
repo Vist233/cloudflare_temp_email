@@ -2,7 +2,7 @@ import { Context } from "hono";
 
 import i18n from "../i18n";
 import { UserOauth2Settings, UserSettings } from "../models";
-import { getJsonSetting, getUserRoles } from "../utils"
+import { getJsonSetting, getZhangAuthUrl, isExternalUserAuthEnabled } from "../utils"
 import { CONSTANTS } from "../constants";
 import { commonGetUserRole } from "../common";
 import { Jwt } from "hono/utils/jwt";
@@ -24,10 +24,15 @@ export default {
         } catch (e) {
             console.error("Failed to get oauth2 settings", e);
         }
+        const authBaseUrl = getZhangAuthUrl(c);
         return c.json({
             enable: settings.enable,
             enableMailVerify: settings.enableMailVerify,
             oauth2ClientIDs: oauth2ClientIDs,
+            useExternalAuth: isExternalUserAuthEnabled(c),
+            authBaseUrl,
+            signUpUrl: authBaseUrl ? `${authBaseUrl}/sign-up` : "",
+            forgotPasswordUrl: authBaseUrl ? `${authBaseUrl}/forgot-password` : "",
         })
     },
     settings: async (c: Context<HonoCustomType>) => {
@@ -60,6 +65,7 @@ export default {
         ) ? null : await Jwt.sign({
             user_email: user.user_email,
             user_id: user.user_id,
+            user_role: user_role?.role,
             // 30 days expire in seconds
             exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
             iat: Math.floor(Date.now() / 1000),

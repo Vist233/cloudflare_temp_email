@@ -20,6 +20,123 @@ const adClient = import.meta.env.VITE_GOOGLE_AD_CLIENT;
 const adSlot = import.meta.env.VITE_GOOGLE_AD_SLOT;
 const { locale } = useI18n({ useScope: 'global' });
 const theme = computed(() => isDark.value ? darkTheme : null)
+const themeOverrides = computed(() => {
+  const common = isDark.value
+    ? {
+        bodyColor: '#050505',
+        cardColor: '#10100f',
+        modalColor: '#10100f',
+        popoverColor: '#10100f',
+        tableColor: '#10100f',
+        borderColor: 'rgba(242, 242, 239, 0.14)',
+        dividerColor: 'rgba(242, 242, 239, 0.14)',
+        inputColor: '#10100f',
+        textColorBase: '#f2f2ef',
+        textColor1: '#f2f2ef',
+        textColor2: '#a7a7a1',
+        textColor3: '#73736e',
+        placeholderColor: '#73736e',
+        primaryColor: '#d8ff3e',
+        primaryColorHover: '#d8ff3e',
+        primaryColorPressed: '#d8ff3e',
+        primaryColorSuppl: '#d8ff3e',
+        infoColor: '#d8ff3e',
+        infoColorHover: '#d8ff3e',
+        infoColorPressed: '#d8ff3e',
+        infoColorSuppl: '#d8ff3e',
+      }
+    : {
+        bodyColor: '#f1f0ec',
+        cardColor: '#e6e3dc',
+        modalColor: '#f1f0ec',
+        popoverColor: '#f1f0ec',
+        tableColor: '#f1f0ec',
+        borderColor: '#c9c5bc',
+        dividerColor: '#c9c5bc',
+        inputColor: '#e6e3dc',
+        textColorBase: '#111111',
+        textColor1: '#111111',
+        textColor2: '#6e6c66',
+        textColor3: '#918f88',
+        placeholderColor: '#918f88',
+        primaryColor: '#111111',
+        primaryColorHover: '#111111',
+        primaryColorPressed: '#111111',
+        primaryColorSuppl: '#111111',
+        infoColor: '#111111',
+        infoColorHover: '#111111',
+        infoColorPressed: '#111111',
+        infoColorSuppl: '#111111',
+      };
+
+  return {
+    common,
+    Card: {
+      color: isDark.value ? '#10100f' : '#e6e3dc',
+      colorEmbedded: isDark.value ? '#10100f' : '#e6e3dc',
+      borderColor: common.borderColor,
+      borderRadius: '0px',
+      textColor: common.textColor1,
+      titleTextColor: common.textColor1,
+    },
+    Button: {
+      borderRadiusTiny: '0px',
+      borderRadiusSmall: '0px',
+      borderRadiusMedium: '0px',
+      borderRadiusLarge: '0px',
+      textColorPrimary: '#050505',
+      textColorHoverPrimary: '#050505',
+      textColorPressedPrimary: '#050505',
+      textColorFocusPrimary: '#050505',
+      colorPrimary: '#d8ff3e',
+      colorHoverPrimary: '#d8ff3e',
+      colorPressedPrimary: '#d8ff3e',
+      colorFocusPrimary: '#d8ff3e',
+      borderPrimary: '1px solid #d8ff3e',
+      borderHoverPrimary: '1px solid #d8ff3e',
+      borderPressedPrimary: '1px solid #d8ff3e',
+      borderFocusPrimary: '1px solid #d8ff3e',
+      textColorInfo: '#050505',
+      textColorHoverInfo: '#050505',
+      textColorPressedInfo: '#050505',
+      textColorFocusInfo: '#050505',
+    },
+    Input: {
+      borderRadius: '0px',
+      color: isDark.value ? '#10100f' : '#e6e3dc',
+      colorFocus: isDark.value ? '#10100f' : '#e6e3dc',
+      colorDisabled: isDark.value ? '#10100f' : '#e6e3dc',
+      border: `1px solid ${common.borderColor}`,
+      borderFocus: `1px solid ${common.textColor1}`,
+      boxShadowFocus: 'none',
+      textColor: common.textColor1,
+      placeholderColor: common.textColor3,
+    },
+    Select: {
+      peers: {
+        InternalSelection: {
+          borderRadius: '0px',
+          color: isDark.value ? '#10100f' : '#e6e3dc',
+          textColor: common.textColor1,
+        },
+      },
+    },
+    Tabs: {
+      tabTextColorActiveLine: common.textColor1,
+      tabTextColorLine: common.textColor2,
+      tabTextColorHoverLine: common.textColor1,
+      barColor: '#d8ff3e',
+    },
+    DataTable: {
+      tdColor: isDark.value ? '#10100f' : '#f1f0ec',
+      thColor: isDark.value ? '#10100f' : '#f1f0ec',
+      borderColor: common.borderColor,
+    },
+    Modal: {
+      color: isDark.value ? '#10100f' : '#f1f0ec',
+    },
+  };
+})
 const localeConfig = computed(() => getNaiveLocaleConfig(isSupportedLocale(locale.value) ? locale.value : DEFAULT_LOCALE))
 const isMobile = useIsMobile()
 const showSideMargin = computed(() => !isMobile.value && useSideMargin.value);
@@ -29,6 +146,7 @@ const gridMaxCols = computed(() => showAd.value ? 8 : 12);
 watchEffect(() => {
   if (typeof document === 'undefined') return
   document.documentElement.lang = isSupportedLocale(locale.value) ? locale.value : DEFAULT_LOCALE
+  document.documentElement.dataset.theme = isDark.value ? 'dark' : 'light'
 })
 
 // Load Google Ad script at top level (not inside onMounted)
@@ -86,7 +204,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <n-config-provider :locale="localeConfig.locale" :date-locale="localeConfig.dateLocale" :theme="theme">
+  <n-config-provider :locale="localeConfig.locale" :date-locale="localeConfig.dateLocale" :theme="theme" :theme-overrides="themeOverrides">
     <n-global-style />
     <n-spin description="loading..." :show="loading">
       <n-notification-provider container-style="margin-top: 60px;">
@@ -125,6 +243,67 @@ onMounted(async () => {
 
 
 <style>
+:root {
+  --paper: #f1f0ec;
+  --field: #e6e3dc;
+  --ink: #111111;
+  --muted: #6e6c66;
+  --quiet: #918f88;
+  --line: #c9c5bc;
+  --line-strong: #1c1c1c;
+  --panel: rgba(241, 240, 236, 0.9);
+  --panel-strong: rgba(230, 227, 220, 0.96);
+  --signal: #d8ff3e;
+  --signal-soft: rgba(216, 255, 62, 0.22);
+  --proof: #d63a2f;
+}
+
+html[data-theme="dark"] {
+  --paper: #050505;
+  --field: #10100f;
+  --ink: #f2f2ef;
+  --muted: #a7a7a1;
+  --quiet: #73736e;
+  --line: rgba(242, 242, 239, 0.14);
+  --line-strong: rgba(242, 242, 239, 0.28);
+  --panel: rgba(16, 16, 15, 0.92);
+  --panel-strong: rgba(16, 16, 15, 0.98);
+  --signal: #d8ff3e;
+  --signal-soft: rgba(216, 255, 62, 0.16);
+  --proof: #ff5d50;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  margin: 0;
+  font-family: Inter, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--ink) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(180deg, color-mix(in srgb, var(--ink) 4%, transparent) 1px, transparent 1px),
+    var(--paper);
+  background-size: 48px 48px, 48px 48px, auto;
+}
+
+html[data-theme="dark"] body {
+  background:
+    linear-gradient(90deg, rgba(242, 242, 239, 0.04) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(242, 242, 239, 0.03) 1px, transparent 1px),
+    radial-gradient(circle at 42% 0%, rgba(242, 242, 239, 0.07), transparent 28rem),
+    var(--paper);
+  background-size: 84px 84px, 84px 84px, auto, auto;
+}
+
+a {
+  color: inherit;
+}
+
 .n-switch {
   margin-left: 10px;
   margin-right: 10px;
@@ -147,8 +326,11 @@ onMounted(async () => {
 }
 
 .main {
-  height: 100vh;
-  text-align: center;
+  min-height: 100vh;
+  text-align: left;
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: 0 12px 28px;
 }
 
 .n-grid {
@@ -161,5 +343,46 @@ onMounted(async () => {
 
 .n-space {
   height: 100%;
+}
+
+:deep(.n-layout) {
+  background: transparent;
+}
+
+:deep(.n-card) {
+  border-radius: 0;
+  border: 1px solid var(--line);
+  background: var(--panel-strong);
+}
+
+:deep(.n-button) {
+  border-radius: 0;
+}
+
+:deep(.n-input),
+:deep(.n-input-group-label),
+:deep(.n-base-selection),
+:deep(.n-tag) {
+  border-radius: 0;
+}
+
+:deep(.n-layout-header),
+:deep(.n-layout-content),
+:deep(.n-drawer-content),
+:deep(.n-modal),
+:deep(.n-page-header),
+:deep(.n-alert),
+:deep(.n-data-table),
+:deep(.n-data-table th),
+:deep(.n-data-table td),
+:deep(.n-tabs-nav),
+:deep(.n-menu) {
+  background: transparent;
+  color: var(--ink);
+}
+
+:deep(.n-page-header .n-page-header__title),
+:deep(.n-page-header .n-page-header__extra) {
+  color: var(--ink);
 }
 </style>
