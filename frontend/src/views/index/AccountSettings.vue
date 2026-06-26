@@ -172,21 +172,36 @@ const changePassword = async () => {
 }
 
 .action-button {
-    color: #111111;
+    color: var(--ink);
     border-color: var(--line);
     background: var(--field);
+    justify-content: flex-start;
+    min-height: 40px;
 }
 
 .action-soft {
-    background: color-mix(in srgb, var(--signal) 20%, var(--paper));
+    background: color-mix(in srgb, var(--field) 88%, transparent);
+    box-shadow: inset 2px 0 0 var(--signal);
 }
 
 .action-warm {
-    background: color-mix(in srgb, #f0b45a 18%, var(--paper));
+    background: color-mix(in srgb, #b18a45 18%, var(--field));
 }
 
 .action-danger {
-    background: color-mix(in srgb, var(--proof) 14%, var(--paper));
+    background: color-mix(in srgb, var(--proof) 12%, var(--field));
+}
+
+html[data-theme="dark"] .action-button {
+    background: rgba(242, 242, 239, 0.04);
+}
+
+html[data-theme="dark"] .action-warm {
+    background: rgba(177, 138, 69, 0.18);
+}
+
+html[data-theme="dark"] .action-danger {
+    background: rgba(255, 93, 80, 0.12);
 }
 
 </style>

@@ -475,6 +475,8 @@ onBeforeUnmount(() => {
 
 .mail-list-panel {
   overflow: hidden;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--field) 86%, transparent);
 }
 
 .mail-list-panel.mobile {
@@ -507,11 +509,15 @@ onBeforeUnmount(() => {
 }
 
 .overlay-dark-backgroud {
-  background-color: rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(90deg, rgba(216, 255, 62, 0.16), transparent 12%),
+    rgba(242, 242, 239, 0.04);
 }
 
 .overlay-light-backgroud {
-  background-color: rgba(0, 0, 0, 0.1);
+  background:
+    linear-gradient(90deg, rgba(216, 255, 62, 0.18), transparent 12%),
+    rgba(0, 0, 0, 0.05);
 }
 
 .mail-item {
@@ -535,6 +541,18 @@ pre {
   .toolbar-actions {
     justify-content: flex-start;
   }
+}
+
+html[data-theme="dark"] .mail-content-panel :deep(.n-card) {
+  background: rgba(242, 242, 239, 0.03);
+}
+
+html[data-theme="dark"] .mail-list-panel :deep(.n-list-item) {
+  border-bottom: 1px solid rgba(242, 242, 239, 0.08);
+}
+
+html[data-theme="dark"] .mail-list-panel :deep(.n-thing-header__title) {
+  color: var(--ink);
 }
 
 @media (max-width: 960px) {

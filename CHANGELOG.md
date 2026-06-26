@@ -29,6 +29,7 @@
 - improve: |Frontend| 按统一设计语言重排首页与用户页：移除多层 card/tab 嵌套，将地址条、收件箱、账户设置、外观偏好改为分段式工具布局；同时下线未再挂载的 `SimpleIndex` 与旧 `BindAddress` 页面组件
 - improve: |Design| 将 `tmpmail` 的全局骨架、页头、页脚与输入控件圆角统一到纸面化设计语言：补充浅纸背景、细边框、编号标签与扁平方角控件，减少默认 Naive UI 模板感
 - improve: |Config| 公开 `open_api/settings` 不再暴露 GitHub 显示开关与版本号给主产品界面，统一由前端静默忽略这些展示型残留
+- improve: |Dark Mode| 收紧暗黑模式的信号色占比：主按钮、用户设置、收件面板与登录页改为深色底 + 细信号边的安静工具样式，避免整块荧光黄底破坏观感
 
 ## v1.8.0
 

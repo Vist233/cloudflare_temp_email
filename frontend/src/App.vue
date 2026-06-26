@@ -84,22 +84,30 @@ const themeOverrides = computed(() => {
       borderRadiusSmall: '0px',
       borderRadiusMedium: '0px',
       borderRadiusLarge: '0px',
-      textColorPrimary: '#050505',
-      textColorHoverPrimary: '#050505',
-      textColorPressedPrimary: '#050505',
-      textColorFocusPrimary: '#050505',
-      colorPrimary: '#d8ff3e',
-      colorHoverPrimary: '#d8ff3e',
-      colorPressedPrimary: '#d8ff3e',
-      colorFocusPrimary: '#d8ff3e',
-      borderPrimary: '1px solid #d8ff3e',
-      borderHoverPrimary: '1px solid #d8ff3e',
-      borderPressedPrimary: '1px solid #d8ff3e',
-      borderFocusPrimary: '1px solid #d8ff3e',
-      textColorInfo: '#050505',
-      textColorHoverInfo: '#050505',
-      textColorPressedInfo: '#050505',
-      textColorFocusInfo: '#050505',
+      textColorPrimary: isDark.value ? '#f2f2ef' : '#111111',
+      textColorHoverPrimary: isDark.value ? '#f2f2ef' : '#111111',
+      textColorPressedPrimary: isDark.value ? '#f2f2ef' : '#111111',
+      textColorFocusPrimary: isDark.value ? '#f2f2ef' : '#111111',
+      colorPrimary: isDark.value ? '#171814' : '#111111',
+      colorHoverPrimary: isDark.value ? '#1d1f19' : '#1d1d1b',
+      colorPressedPrimary: isDark.value ? '#11120f' : '#090909',
+      colorFocusPrimary: isDark.value ? '#1d1f19' : '#1d1d1b',
+      borderPrimary: isDark.value ? '1px solid rgba(242, 242, 239, 0.16)' : '1px solid #111111',
+      borderHoverPrimary: isDark.value ? '1px solid rgba(242, 242, 239, 0.22)' : '1px solid #111111',
+      borderPressedPrimary: isDark.value ? '1px solid rgba(242, 242, 239, 0.16)' : '1px solid #111111',
+      borderFocusPrimary: isDark.value ? '1px solid rgba(242, 242, 239, 0.22)' : '1px solid #111111',
+      textColorInfo: isDark.value ? '#f2f2ef' : '#111111',
+      textColorHoverInfo: isDark.value ? '#f2f2ef' : '#111111',
+      textColorPressedInfo: isDark.value ? '#f2f2ef' : '#111111',
+      textColorFocusInfo: isDark.value ? '#f2f2ef' : '#111111',
+      colorInfo: isDark.value ? '#171814' : '#e6e3dc',
+      colorHoverInfo: isDark.value ? '#1d1f19' : '#dedbd3',
+      colorPressedInfo: isDark.value ? '#11120f' : '#d4d0c6',
+      colorFocusInfo: isDark.value ? '#1d1f19' : '#dedbd3',
+      borderInfo: isDark.value ? '1px solid rgba(242, 242, 239, 0.16)' : '1px solid #c9c5bc',
+      borderHoverInfo: isDark.value ? '1px solid rgba(242, 242, 239, 0.22)' : '1px solid #bdb8ae',
+      borderPressedInfo: isDark.value ? '1px solid rgba(242, 242, 239, 0.16)' : '1px solid #c9c5bc',
+      borderFocusInfo: isDark.value ? '1px solid rgba(242, 242, 239, 0.22)' : '1px solid #bdb8ae',
     },
     Input: {
       borderRadius: '0px',
@@ -126,6 +134,18 @@ const themeOverrides = computed(() => {
       tabTextColorLine: common.textColor2,
       tabTextColorHoverLine: common.textColor1,
       barColor: '#d8ff3e',
+    },
+    Tag: {
+      borderRadius: '0px',
+      color: isDark.value ? '#151513' : '#e6e3dc',
+      textColor: common.textColor2,
+      border: `1px solid ${common.borderColor}`,
+    },
+    Alert: {
+      color: isDark.value ? 'rgba(242, 242, 239, 0.04)' : '#ece8e1',
+      border: `1px solid ${common.borderColor}`,
+      titleTextColor: common.textColor1,
+      textColor: common.textColor2,
     },
     DataTable: {
       tdColor: isDark.value ? '#10100f' : '#f1f0ec',
@@ -357,6 +377,23 @@ a {
 
 :deep(.n-button) {
   border-radius: 0;
+  min-height: 36px;
+  letter-spacing: 0;
+}
+
+html[data-theme="dark"] :deep(.n-button--primary-type),
+html[data-theme="dark"] :deep(.n-button--info-type) {
+  box-shadow: inset 2px 0 0 var(--signal);
+}
+
+html[data-theme="dark"] :deep(.n-button--secondary-type),
+html[data-theme="dark"] :deep(.n-button--tertiary-type),
+html[data-theme="dark"] :deep(.n-button--quaternary-type) {
+  color: var(--ink);
+}
+
+html[data-theme="dark"] :deep(.n-button:hover) {
+  background-image: linear-gradient(90deg, rgba(216, 255, 62, 0.08), transparent 35%);
 }
 
 :deep(.n-input),
@@ -384,5 +421,23 @@ a {
 :deep(.n-page-header .n-page-header__title),
 :deep(.n-page-header .n-page-header__extra) {
   color: var(--ink);
+}
+
+html[data-theme="dark"] :deep(.n-tag) {
+  background: rgba(242, 242, 239, 0.04);
+  color: var(--muted);
+  border-color: rgba(242, 242, 239, 0.12);
+}
+
+html[data-theme="dark"] :deep(.n-data-table th) {
+  color: var(--muted);
+}
+
+html[data-theme="dark"] :deep(.n-tabs-nav-scroll-content) {
+  border-bottom: 1px solid var(--line);
+}
+
+html[data-theme="dark"] :deep(.n-alert) {
+  background: rgba(242, 242, 239, 0.04);
 }
 </style>

@@ -109,30 +109,30 @@ const oauth2Login = async (clientID) => {
                             @keyup.enter="emailLogin" />
                     </n-form-item-row>
                     <Turnstile ref="loginTurnstileRef" v-if="openSettings.enableGlobalTurnstileCheck" v-model:value="loginCfToken" />
-                    <n-button @click="emailLogin" type="primary" block strong :round="false">
+                    <n-button @click="emailLogin" type="primary" block strong :round="false" class="cta-button cta-button--primary">
                         {{ t('login') }}
                     </n-button>
                     <div class="aux-actions" v-if="useExternalAuth">
-                        <n-button v-if="signUpUrl" @click="openHostedAuthPage(signUpUrl)" block secondary :round="false">
+                        <n-button v-if="signUpUrl" @click="openHostedAuthPage(signUpUrl)" block secondary :round="false" class="cta-button cta-button--secondary">
                             <template #icon>
                                 <n-icon :component="OpenInNewFilled" />
                             </template>
                             {{ t('register') }}
                         </n-button>
-                        <n-button v-if="forgotPasswordUrl" @click="openHostedAuthPage(forgotPasswordUrl)" block tertiary :round="false">
+                        <n-button v-if="forgotPasswordUrl" @click="openHostedAuthPage(forgotPasswordUrl)" block tertiary :round="false" class="cta-button cta-button--ghost">
                             {{ t('forgotPassword') }}
                         </n-button>
                     </div>
                     <template v-else>
                         <n-divider />
-                        <n-button @click="passkeyLogin" type="primary" block secondary strong>
+                        <n-button @click="passkeyLogin" type="primary" block secondary strong class="cta-button cta-button--secondary">
                             <template #icon>
                                 <n-icon :component="KeyFilled" />
                             </template>
                             {{ t('loginWithPasskey') }}
                         </n-button>
                         <n-button @click="oauth2Login(item.clientID)" v-for="item in userOpenSettings.oauth2ClientIDs"
-                            :key="item.clientID" block secondary strong>
+                            :key="item.clientID" block secondary strong class="cta-button cta-button--secondary">
                             <template #icon v-if="item.icon">
                                 <span class="oauth2-icon" v-html="item.icon"></span>
                             </template>
@@ -146,13 +146,13 @@ const oauth2Login = async (clientID) => {
                     <n-alert :show-icon="false" :bordered="false">
                         tmpmail users sign up and recover passwords through the unified auth service.
                     </n-alert>
-                    <n-button v-if="signUpUrl" @click="openHostedAuthPage(signUpUrl)" type="primary" block strong :round="false">
+                    <n-button v-if="signUpUrl" @click="openHostedAuthPage(signUpUrl)" type="primary" block strong :round="false" class="cta-button cta-button--primary">
                         <template #icon>
                             <n-icon :component="OpenInNewFilled" />
                         </template>
                         {{ t('register') }}
                     </n-button>
-                    <n-button v-if="forgotPasswordUrl" @click="openHostedAuthPage(forgotPasswordUrl)" block secondary :round="false">
+                    <n-button v-if="forgotPasswordUrl" @click="openHostedAuthPage(forgotPasswordUrl)" block secondary :round="false" class="cta-button cta-button--secondary">
                         {{ t('forgotPassword') }}
                     </n-button>
                 </n-space>
@@ -175,6 +175,8 @@ const oauth2Login = async (clientID) => {
 
 .aux-actions {
     margin-top: 8px;
+    display: grid;
+    gap: 10px;
 }
 
 .oauth2-icon {
@@ -188,5 +190,22 @@ const oauth2Login = async (clientID) => {
 .oauth2-icon :deep(svg) {
     width: 100%;
     height: 100%;
+}
+
+.cta-button {
+    justify-content: flex-start;
+    min-height: 42px;
+}
+
+.cta-button--primary {
+    box-shadow: inset 2px 0 0 var(--signal);
+}
+
+.cta-button--secondary {
+    background: color-mix(in srgb, var(--field) 92%, transparent);
+}
+
+.cta-button--ghost {
+    background: transparent;
 }
 </style>

@@ -287,13 +287,13 @@ onMounted(async () => {
                     </div>
 
                     <div class="login-actions">
-                    <n-button @click="login" :loading="loading" type="primary" block strong>
+                    <n-button @click="login" :loading="loading" type="primary" block strong class="cta-button cta-button--primary">
                         <template #icon>
                             <n-icon :component="EmailOutlined" />
                         </template>
                         {{ loginAndBindTag }}
                     </n-button>
-                    <n-button v-if="showNewAddressTab" @click="tabValue = 'register'" block secondary strong>
+                    <n-button v-if="showNewAddressTab" @click="tabValue = 'register'" block secondary strong class="cta-button cta-button--secondary">
                         <template #icon>
                             <n-icon :component="NewLabelOutlined" />
                         </template>
@@ -312,7 +312,7 @@ onMounted(async () => {
                             <p>{{ t("getNewEmailTip3") }}</p>
                         </div>
                         <n-button v-if="!openSettings.disableCustomAddressName" @click="generateName"
-                            style="margin-bottom: 10px;">
+                            style="margin-bottom: 10px;" class="compact-utility-button">
                             {{ t('generateName') }}
                         </n-button>
                         <n-input-group>
@@ -335,7 +335,7 @@ onMounted(async () => {
                             </p>
                         </n-form-item-row>
                         <Turnstile v-model:value="cfToken" />
-                        <n-button type="primary" block strong @click="newEmail" :loading="loading">
+                        <n-button type="primary" block strong @click="newEmail" :loading="loading" class="cta-button cta-button--primary">
                             <template #icon>
                                 <n-icon :component="NewLabelOutlined" />
                             </template>
@@ -360,7 +360,11 @@ onMounted(async () => {
 }
 
 .login-mode {
-    width: 100%;
+    width: fit-content;
+    max-width: 100%;
+    padding: 4px;
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--field) 88%, transparent);
 }
 
 .login-mode :deep(.n-radio-group__splitor) {
@@ -373,12 +377,31 @@ onMounted(async () => {
 
 .login-mode :deep(.n-radio-button__state-border),
 .login-mode :deep(.n-radio-button__state-border-left) {
+    display: none;
+}
+
+.login-mode :deep(.n-radio-button__button) {
+    border: 0;
+    min-height: 34px;
+    color: var(--muted);
+    background: transparent;
+}
+
+.login-mode :deep(.n-radio-button--checked .n-radio-button__button) {
+    color: var(--ink);
+    background: color-mix(in srgb, var(--signal) 12%, var(--field));
+    box-shadow: inset 2px 0 0 var(--signal);
+}
+
+.login-mode :deep(.n-radio-button__state-border),
+.login-mode :deep(.n-radio-button__state-border-left) {
     border-radius: 0;
 }
 
 .login-section {
     display: grid;
     gap: 12px;
+    max-width: 760px;
 }
 
 .switch-login-button {
@@ -392,11 +415,37 @@ onMounted(async () => {
     gap: 10px;
 }
 
+.cta-button {
+    justify-content: flex-start;
+    min-height: 42px;
+    font-weight: 600;
+}
+
+.cta-button--primary {
+    box-shadow: inset 2px 0 0 var(--signal);
+}
+
+.cta-button--secondary {
+    background: color-mix(in srgb, var(--field) 92%, transparent);
+}
+
+.compact-utility-button {
+    justify-self: start;
+}
+
 .helper-copy p {
     margin: 0 0 8px;
     color: var(--muted);
     font-size: 12px;
     line-height: 1.5;
+}
+
+html[data-theme="dark"] .login-mode {
+    background: rgba(242, 242, 239, 0.03);
+}
+
+html[data-theme="dark"] .cta-button--secondary {
+    background: rgba(242, 242, 239, 0.04);
 }
 </style>
 

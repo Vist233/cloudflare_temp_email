@@ -100,6 +100,8 @@ onMounted(async () => {
     padding: 4px 8px;
     border: 1px solid var(--line);
     font-size: 12px;
+    color: var(--muted);
+    background: color-mix(in srgb, var(--field) 86%, transparent);
 }
 
 .center {

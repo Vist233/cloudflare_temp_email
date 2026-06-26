@@ -158,10 +158,10 @@ const renamePasskey = async () => {
 <template>
     <div class="center" v-if="userSettings.user_email">
         <div class="settings-panel">
-            <n-button @click="showPasskeyList = true; fetchPasskeyList();" secondary block strong>
+            <n-button @click="showPasskeyList = true; fetchPasskeyList();" secondary block strong class="settings-action settings-action--muted">
                 {{ t('showPasskeyList') }}
             </n-button>
-            <n-button @click="showCreatePasskey = true" type="primary" secondary block strong>
+            <n-button @click="showCreatePasskey = true" type="primary" secondary block strong class="settings-action settings-action--signal">
                 {{ t('createPasskey') }}
             </n-button>
             <n-alert :show-icon="false" :bordered="false">
@@ -169,7 +169,7 @@ const renamePasskey = async () => {
                     {{ t('passordTip') }}
                 </span>
             </n-alert>
-            <n-button @click="showLogout = true" secondary block strong>
+            <n-button @click="showLogout = true" secondary block strong class="settings-action settings-action--muted">
                 {{ t('logout') }}
             </n-button>
         </div>
@@ -219,5 +219,29 @@ const renamePasskey = async () => {
 
 .n-button {
     margin: 0;
+}
+
+.settings-action {
+    justify-content: flex-start;
+    min-height: 42px;
+}
+
+.settings-action--signal {
+    box-shadow: inset 2px 0 0 var(--signal);
+    color: var(--ink);
+    background: color-mix(in srgb, var(--field) 90%, var(--signal) 10%);
+}
+
+.settings-action--muted {
+    background: color-mix(in srgb, var(--field) 92%, transparent);
+}
+
+html[data-theme="dark"] .settings-action--signal {
+    background: rgba(242, 242, 239, 0.05);
+    color: var(--ink);
+}
+
+html[data-theme="dark"] .settings-action--muted {
+    background: rgba(242, 242, 239, 0.04);
 }
 </style>

@@ -120,6 +120,11 @@ onMounted(async () => {
     padding: 18px;
 }
 
+.empty-state {
+    width: min(100%, 860px);
+    margin: 0 auto;
+}
+
 .empty-state.large {
     padding: 18px;
 }
@@ -155,6 +160,11 @@ onMounted(async () => {
     text-align: left;
 }
 
+.section-body {
+    display: grid;
+    gap: 14px;
+}
+
 .control-deck {
     display: flex;
     flex-wrap: wrap;
@@ -168,7 +178,7 @@ onMounted(async () => {
 }
 
 .control-button {
-    color: #111111;
+    color: var(--ink);
 }
 
 @media (max-width: 720px) {

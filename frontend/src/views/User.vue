@@ -58,8 +58,9 @@ const { userSettings } = useGlobalState()
 }
 
 .account-inline {
-    border-left: 1px solid var(--line);
-    padding-left: 18px;
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--field) 88%, transparent);
+    padding: 16px;
 }
 
 .section-head {
@@ -84,10 +85,7 @@ const { userSettings } = useGlobalState()
     }
 
     .account-inline {
-        border-left: 0;
-        border-top: 1px solid var(--line);
-        padding-left: 0;
-        padding-top: 18px;
+        padding: 16px;
     }
 }
 </style>

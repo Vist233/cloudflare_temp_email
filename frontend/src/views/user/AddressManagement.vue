@@ -137,6 +137,7 @@ const columns = [
                             {
                                 tertiary: true,
                                 type: "primary",
+                                class: "row-action row-action--signal",
                             },
                             { default: () => t('changeMailAddress') }
                         ),
@@ -147,6 +148,7 @@ const columns = [
                     {
                         tertiary: true,
                         type: "primary",
+                        class: "row-action row-action--signal",
                         onClick: () => {
                             currentAddressId.value = row.id;
                             currentAddress.value = row.name;
@@ -164,6 +166,7 @@ const columns = [
                             {
                                 tertiary: true,
                                 type: "error",
+                                class: "row-action row-action--danger",
                             },
                             { default: () => t('unbindAddress') }
                         ),
@@ -241,5 +244,17 @@ onMounted(async () => {
 .address-table-scroll {
     max-width: 100%;
     overflow-x: auto;
+}
+
+:deep(.row-action) {
+    color: var(--muted);
+}
+
+:deep(.row-action--signal) {
+    color: var(--ink);
+}
+
+:deep(.row-action--danger) {
+    color: var(--proof);
 }
 </style>

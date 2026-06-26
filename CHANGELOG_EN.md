@@ -29,6 +29,7 @@
 - improve: |Frontend| Recompose the home page and user page into the shared quiet tool aesthetic: fewer nested cards/tabs, clearer sectional layout for address, inbox, account, and appearance, and removal of the now-unmounted `SimpleIndex` and legacy `BindAddress` components
 - improve: |Design| Align the global shell, header, footer, and control shapes with the paper-based design language by adding the off-white page field, thin rules, index labels, and square-edged controls instead of the default Naive UI feel
 - improve: |Config| Keep the public `open_api/settings` payload quiet by suppressing GitHub-display and version signals from the product surface, leaving version inspection to admin-specific tooling
+- improve: |Dark Mode| Reduce signal-color usage in dark mode so the login flow, mailbox, and user settings read like a calm tool surface rather than neon blocks; primary actions now lean on deep surfaces plus a narrow signal edge
 
 ## v1.8.0
 
