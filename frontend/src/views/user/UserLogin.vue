@@ -17,7 +17,7 @@ const {
 } = useGlobalState()
 const message = useMessage();
 
-const { t } = useScopedI18n('views.user.UserLogin')
+const { t, locale } = useScopedI18n('views.user.UserLogin')
 
 const tabValue = ref("signin");
 const user = ref({
@@ -30,6 +30,12 @@ const loginTurnstileRef = ref(null)
 const useExternalAuth = computed(() => !!userOpenSettings.value.useExternalAuth)
 const signUpUrl = computed(() => userOpenSettings.value.signUpUrl || "")
 const forgotPasswordUrl = computed(() => userOpenSettings.value.forgotPasswordUrl || "")
+const hostedAuthHelpText = computed(() => {
+    if (locale.value === 'zh') {
+        return '注册和密码找回统一通过认证中心处理。tmpmail 这里只保留登录与地址使用入口。';
+    }
+    return 'Registration and password recovery are handled by the unified auth service. tmpmail keeps only the login and mailbox entry flow here.';
+})
 
 const openHostedAuthPage = (url) => {
     if (!url) return;
@@ -98,8 +104,12 @@ const oauth2Login = async (clientID) => {
 
 <template>
     <div class="center">
-        <n-tabs v-model:value="tabValue" size="large" v-if="userOpenSettings.fetched" justify-content="space-evenly">
-            <n-tab-pane name="signin" :tab="t('login')">
+        <div v-if="userOpenSettings.fetched" class="login-shell">
+            <n-radio-group v-model:value="tabValue" class="login-mode" name="user-login-mode">
+                <n-radio-button value="signin">{{ t('login') }}</n-radio-button>
+                <n-radio-button v-if="useExternalAuth" value="signup">{{ t('register') }}</n-radio-button>
+            </n-radio-group>
+            <section v-if="tabValue === 'signin'" class="login-section">
                 <n-form>
                     <n-form-item-row :label="t('email')" required>
                         <n-input v-model:value="user.email" />
@@ -140,11 +150,11 @@ const oauth2Login = async (clientID) => {
                         </n-button>
                     </template>
                 </n-form>
-            </n-tab-pane>
-            <n-tab-pane v-if="useExternalAuth" name="signup" :tab="t('register')">
+            </section>
+            <section v-else-if="useExternalAuth" class="login-section">
                 <n-space vertical :size="16">
-                    <n-alert :show-icon="false" :bordered="false">
-                        tmpmail users sign up and recover passwords through the unified auth service.
+                    <n-alert :show-icon="false" :bordered="false" class="register-note">
+                        {{ hostedAuthHelpText }}
                     </n-alert>
                     <n-button v-if="signUpUrl" @click="openHostedAuthPage(signUpUrl)" type="primary" block strong :round="false" class="cta-button cta-button--primary">
                         <template #icon>
@@ -156,21 +166,62 @@ const oauth2Login = async (clientID) => {
                         {{ t('forgotPassword') }}
                     </n-button>
                 </n-space>
-            </n-tab-pane>
-        </n-tabs>
+            </section>
+        </div>
     </div>
 </template>
 
 <style scoped>
 .center {
     display: flex;
-    text-align: center;
-    place-items: center;
     justify-content: center;
+    width: 100%;
 }
 
-.n-button {
-    margin-top: 10px;
+.login-shell {
+    width: min(100%, 680px);
+    display: grid;
+    gap: 16px;
+    text-align: left;
+}
+
+.login-mode {
+    width: fit-content;
+    max-width: 100%;
+    padding: 4px;
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--field) 88%, transparent);
+}
+
+.login-mode :deep(.n-radio-group__splitor) {
+    display: none;
+}
+
+.login-mode :deep(.n-radio-button__state-border),
+.login-mode :deep(.n-radio-button__state-border-left) {
+    display: none;
+}
+
+.login-mode :deep(.n-radio-button__button) {
+    border: 0;
+    min-height: 34px;
+    color: var(--muted);
+    background: transparent;
+}
+
+.login-mode :deep(.n-radio-button--checked .n-radio-button__button) {
+    color: var(--ink);
+    background: color-mix(in srgb, var(--signal) 12%, var(--field));
+    box-shadow: inset 2px 0 0 var(--signal);
+}
+
+.login-section {
+    display: grid;
+    gap: 12px;
+}
+
+.login-section :deep(.n-form) {
+    text-align: left;
 }
 
 .aux-actions {
@@ -195,17 +246,37 @@ const oauth2Login = async (clientID) => {
 .cta-button {
     justify-content: flex-start;
     min-height: 42px;
+    font-weight: 600;
 }
 
 .cta-button--primary {
     box-shadow: inset 2px 0 0 var(--signal);
+    color: var(--ink);
 }
 
 .cta-button--secondary {
     background: color-mix(in srgb, var(--field) 92%, transparent);
+    color: var(--ink);
 }
 
 .cta-button--ghost {
     background: transparent;
+    color: var(--muted);
+}
+
+.register-note {
+    line-height: 1.6;
+}
+
+html[data-theme="dark"] .login-mode {
+    background: rgba(242, 242, 239, 0.03);
+}
+
+html[data-theme="dark"] .cta-button--secondary {
+    background: rgba(242, 242, 239, 0.04);
+}
+
+html[data-theme="dark"] .cta-button--ghost {
+    color: var(--muted);
 }
 </style>
