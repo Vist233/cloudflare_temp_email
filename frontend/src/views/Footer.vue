@@ -27,7 +27,7 @@ const { t } = useScopedI18n('views.Footer')
 
 <style scoped>
 .footer-shell {
-    padding-top: 6px;
+    padding-top: 2px;
 }
 
 .footer-divider {
@@ -37,6 +37,6 @@ const { t } = useScopedI18n('views.Footer')
 
 .footer-inner {
     text-align: center;
-    padding: 16px 0 6px;
+    padding: 12px 0 2px;
 }
 </style>

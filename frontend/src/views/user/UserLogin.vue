@@ -272,6 +272,12 @@ html[data-theme="dark"] .login-mode {
     background: rgba(242, 242, 239, 0.03);
 }
 
+html[data-theme="dark"] .login-mode :deep(.n-radio-button.n-radio-button--checked .n-radio-button__button) {
+    background: rgba(242, 242, 239, 0.05) !important;
+    color: var(--ink) !important;
+    box-shadow: inset 2px 0 0 var(--signal) !important;
+}
+
 html[data-theme="dark"] .cta-button--secondary {
     background: rgba(242, 242, 239, 0.04);
 }
