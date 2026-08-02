@@ -10,8 +10,8 @@
 
 ### Features
 
+- feat: |Auth| Replace the Zhang Auth integration with first-party OIDC Authorization Code + PKCE: tmpmail uses a fixed HTTPS callback, HttpOnly transaction cookie, nonce, JWKS/ES256 ID-token validation, and isolated Worker secrets. It no longer forwards passwords to the removed legacy login API. Local users, roles, mailbox quotas, and `x-user-token` remain in place, with stable identity linkage through OIDC `sub`
 - feat: |Frontend| Upgrade the address credential dialog to "Address Credentials & Connection Methods" and reuse it for both normal users and admin-created addresses; support showing AI Agent access via `ENABLE_AGENT_EMAIL_INFO` and SMTP/IMAP client settings via `SMTP_IMAP_PROXY_CONFIG`
-- feat: |Auth| Support an external auth center via `ZHANG_AUTH_URL`: `/user_api/login` can delegate email/password verification to the external auth service, auto-provision or sync the local tmpmail user on success, and still issue the local `x-user-token`; the frontend can send sign-up and password-recovery traffic directly to the hosted auth pages
 
 ### Bug Fixes
 

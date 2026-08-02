@@ -15,7 +15,7 @@
 :::
 
 > [!NOTE]
-> 如果配置了 `ZHANG_AUTH_URL`，`tmpmail` 会把登录委托给外部认证中心。此时注册、邮箱验证、找回密码等入口应使用外部认证中心的托管页面；用户首次在 `tmpmail` 成功登录后，系统会自动创建本地用户并签发 `x-user-token`。
+> 配置 Zhang Auth OIDC 后，`tmpmail` 通过 `/user_api/oidc/login` 跳转到认证中心，使用 Authorization Code + PKCE 返回。认证成功后仅用已验证的 OIDC 身份创建或关联本地用户，并继续签发本站 `x-user-token`；注册、邮箱验证和找回密码使用认证中心托管页面。
 
 ## 通过 admin API 新建邮箱地址
 

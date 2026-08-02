@@ -1,5 +1,9 @@
 # OAuth2 Third-Party Login
 
+> Zhang Auth is not an administrator-editable third-party OAuth2 entry on this
+> page. It uses the Worker-built-in OIDC Code + PKCE flow and its own secret;
+> see [Worker Variables](/en/guide/worker-vars).
+
 > [!WARNING] Note
 > Third-party login will automatically register an account using the user's email (emails with the same address will be considered the same account)
 >

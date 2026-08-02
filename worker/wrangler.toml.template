@@ -68,6 +68,13 @@ DOMAINS = ["xxx.xxx1" , "xxx.xxx2"] # all domain names
 #    { domains = ["xxx.xxx1" , "xxx.xxx2"], role = "admin", prefix = "" },
 # ]
 JWT_SECRET = "xxx"
+# Optional first-party Zhang Auth OIDC. Register the exact callback
+# https://<your-domain>/user_api/oidc/callback, then set the two secrets with
+# `wrangler secret put`; never put either secret in this file.
+# ZHANG_AUTH_URL = "https://auth.zhangyvjing.com"
+# ZHANG_AUTH_CLIENT_ID = "tmpmail-web"
+# ZHANG_AUTH_CLIENT_SECRET = set with `wrangler secret put ZHANG_AUTH_CLIENT_SECRET`
+# TMPMAIL_OIDC_COOKIE_SECRET = set with `wrangler secret put TMPMAIL_OIDC_COOKIE_SECRET`
 BLACK_LIST = ""
 # Allow users to create email addresses
 ENABLE_USER_CREATE_EMAIL = true

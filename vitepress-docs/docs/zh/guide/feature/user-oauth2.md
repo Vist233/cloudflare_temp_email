@@ -1,5 +1,8 @@
 # OAuth2 第三方登录
 
+> Zhang Auth 不是本页的管理员可编辑第三方 OAuth2 配置。它使用 Worker 内置的
+> OIDC Code + PKCE 流程和独立 secret；请参见[Worker 变量](/zh/guide/worker-vars)。
+
 > [!WARNING] 注意
 > 第三方登录会自动使用用户邮箱注册账号(邮箱相同将视为同一账号)
 >

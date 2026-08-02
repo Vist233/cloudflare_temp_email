@@ -10,8 +10,8 @@
 
 ### Features
 
+- feat: |Auth| 将 Zhang Auth 接入改为第一方 OIDC Authorization Code + PKCE：tmpmail 使用固定 HTTPS 回调、HttpOnly 事务 Cookie、nonce、JWKS/ES256 ID Token 校验和独立 Worker secret；不再转发用户密码到已移除的旧登录 API。本地用户、角色、地址配额与 `x-user-token` 保持不变，并以 OIDC `sub` 建立稳定身份关联
 - feat: |Frontend| 将邮箱地址凭证弹窗升级为“地址凭证与连接方式”，复用普通用户与 admin 创建邮箱结果弹窗；支持通过 `ENABLE_AGENT_EMAIL_INFO` 展示 AI Agent 接入信息，并通过 `SMTP_IMAP_PROXY_CONFIG` 展示 SMTP/IMAP 客户端连接信息
-- feat: |Auth| 支持通过 `ZHANG_AUTH_URL` 接入外部认证中心：`/user_api/login` 可转发到外部认证服务校验账号密码，成功后自动在本地 `tmpmail` 建立/同步用户，并继续签发本站 `x-user-token`；前端注册与找回密码入口可直接跳转到统一认证页面
 
 ### Bug Fixes
 

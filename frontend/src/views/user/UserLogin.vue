@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useMessage } from 'naive-ui'
 import { useScopedI18n } from '@/i18n/app'
 import { KeyFilled, OpenInNewFilled } from '@vicons/material'
@@ -41,6 +41,24 @@ const openHostedAuthPage = (url) => {
     if (!url) return;
     window.open(url, '_blank', 'noopener,noreferrer');
 };
+
+const startZhangAuthLogin = () => {
+    location.assign('/user_api/oidc/login');
+};
+
+onMounted(async () => {
+    const query = new URLSearchParams(location.search);
+    if (query.get('oidc') !== '1') return;
+    try {
+        const result = await api.fetch('/user_api/oidc/complete', { method: 'POST' });
+        userJwt.value = result.jwt;
+        history.replaceState({}, '', `${location.pathname}${location.hash}`);
+        location.reload();
+    } catch (error) {
+        history.replaceState({}, '', `${location.pathname}${location.hash}`);
+        message.error(error.message || 'Zhang Auth sign-in failed');
+    }
+});
 
 const emailLogin = async () => {
     if (!user.value.email || !user.value.password) {
@@ -110,7 +128,7 @@ const oauth2Login = async (clientID) => {
                 <n-radio-button v-if="useExternalAuth" value="signup">{{ t('register') }}</n-radio-button>
             </n-radio-group>
             <section v-if="tabValue === 'signin'" class="login-section">
-                <n-form>
+                <n-form v-if="!useExternalAuth">
                     <n-form-item-row :label="t('email')" required>
                         <n-input v-model:value="user.email" />
                     </n-form-item-row>
@@ -150,6 +168,20 @@ const oauth2Login = async (clientID) => {
                         </n-button>
                     </template>
                 </n-form>
+                <n-space v-else vertical :size="12">
+                    <n-alert :show-icon="false" :bordered="false" class="register-note">
+                        {{ hostedAuthHelpText }}
+                    </n-alert>
+                    <n-button @click="startZhangAuthLogin" type="primary" block strong :round="false" class="cta-button cta-button--primary">
+                        {{ t('login') }} · Zhang Auth
+                    </n-button>
+                    <n-button v-if="signUpUrl" @click="openHostedAuthPage(signUpUrl)" block secondary :round="false" class="cta-button cta-button--secondary">
+                        {{ t('register') }}
+                    </n-button>
+                    <n-button v-if="forgotPasswordUrl" @click="openHostedAuthPage(forgotPasswordUrl)" block tertiary :round="false" class="cta-button cta-button--ghost">
+                        {{ t('forgotPassword') }}
+                    </n-button>
+                </n-space>
             </section>
             <section v-else-if="useExternalAuth" class="login-section">
                 <n-space vertical :size="16">

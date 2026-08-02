@@ -5,6 +5,7 @@ import user from './user';
 import bind_address from './bind_address';
 import passkey from './passkey';
 import oauth2 from './oauth2';
+import oidc from './oidc';
 import user_mail_api from './user_mail_api';
 
 export const api = new Hono<HonoCustomType>();
@@ -25,6 +26,11 @@ api.post('/user_api/register', user.register);
 // oauth2 api
 api.get('/user_api/oauth2/login_url', oauth2.getOauth2LoginUrl);
 api.post('/user_api/oauth2/callback', oauth2.oauth2Login);
+
+// First-party Zhang Auth OIDC (separate from admin-configured third-party OAuth).
+api.get('/user_api/oidc/login', oidc.login);
+api.get('/user_api/oidc/callback', oidc.callback);
+api.post('/user_api/oidc/complete', oidc.complete);
 
 // bind address api
 api.get('/user_api/bind_address', bind_address.getBindedAddresses);

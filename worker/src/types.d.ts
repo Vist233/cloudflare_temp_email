@@ -122,6 +122,9 @@ type Bindings = {
 
     // external auth
     ZHANG_AUTH_URL: string | undefined
+    ZHANG_AUTH_CLIENT_ID: string | undefined
+    ZHANG_AUTH_CLIENT_SECRET: string | undefined
+    TMPMAIL_OIDC_COOKIE_SECRET: string | undefined
     TMPMAIL_OWNER_EMAIL: string | undefined
 }
 

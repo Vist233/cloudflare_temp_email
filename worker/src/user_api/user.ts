@@ -23,7 +23,7 @@ const buildHostedAuthUrl = (baseUrl: string, path: string): string => {
     return url.toString();
 }
 
-const ensureLocalUserFromExternalAuth = async (
+export const ensureLocalUserFromOidc = async (
     c: Context<HonoCustomType>,
     email: string,
 ): Promise<number> => {
@@ -31,7 +31,7 @@ const ensureLocalUserFromExternalAuth = async (
     const reqIp = c.req.raw.headers.get("cf-connecting-ip");
     const geoData = new GeoData(reqIp, c.req.raw.cf as any);
     const userInfo = new UserInfo(geoData, normalizedEmail);
-    const placeholderPassword = `external-auth:${normalizedEmail}`;
+    const placeholderPassword = `oidc:${normalizedEmail}`;
 
     await c.env.DB.prepare(
         `INSERT INTO users (user_email, password, user_info)`
@@ -77,38 +77,7 @@ const ensureLocalUserFromExternalAuth = async (
     return userId;
 }
 
-const loginViaZhangAuth = async (
-    c: Context<HonoCustomType>,
-    email: string,
-    password: string,
-): Promise<{ userId: number; email: string }> => {
-    const baseUrl = getZhangAuthUrl(c);
-    const response = await fetch(buildHostedAuthUrl(baseUrl, "/v1/login"), {
-        method: "POST",
-        headers: {
-            "content-type": "application/json",
-        },
-        body: JSON.stringify({
-            email,
-            password,
-        }),
-    });
-
-    const data = await response.json().catch(() => null as any);
-    if (!response.ok || !data?.ok) {
-        const errorMessage = data?.error?.message || data?.message || "External authentication failed";
-        throw new Error(errorMessage);
-    }
-
-    const normalizedEmail = (data?.data?.user?.email || email).trim().toLowerCase();
-    const userId = await ensureLocalUserFromExternalAuth(c, normalizedEmail);
-    return {
-        userId,
-        email: normalizedEmail,
-    };
-}
-
-const issueLocalUserJwt = async (
+export const issueLocalUserJwt = async (
     c: Context<HonoCustomType>,
     email: string,
     userId: number,
@@ -319,16 +288,7 @@ export default {
                 return c.text(msgs.TurnstileCheckFailedMsg, 400)
             }
         }
-        if (isExternalUserAuthEnabled(c)) {
-            try {
-                const externalUser = await loginViaZhangAuth(c, email, password);
-                const jwt = await issueLocalUserJwt(c, externalUser.email, externalUser.userId);
-                return c.json({ jwt });
-            } catch (error) {
-                const message = error instanceof Error ? error.message : msgs.InvalidEmailOrPasswordMsg;
-                return c.text(message, 400);
-            }
-        }
+        if (isExternalUserAuthEnabled(c)) return c.text("Use /user_api/oidc/login for Zhang Auth sign-in", 410);
         const { id: user_id, password: dbPassword } = await c.env.DB.prepare(
             `SELECT id, password FROM users where user_email = ?`
         ).bind(email).first() || {};

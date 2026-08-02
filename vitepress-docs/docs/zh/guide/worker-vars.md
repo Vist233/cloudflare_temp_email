@@ -116,7 +116,10 @@
 
 | 变量名                                | 类型      | 说明                                                                     | 示例    |
 | ------------------------------------- | --------- | ------------------------------------------------------------------------ | ------- |
-| `ZHANG_AUTH_URL`                      | 文本      | 外部认证中心基地址。配置后，`/user_api/login` 会转发到该认证中心校验密码；前端注册 / 找回密码入口也会跳转到该站点托管页面 | `https://auth.example.com` |
+| `ZHANG_AUTH_URL`                      | 文本      | Zhang Auth OIDC issuer；必须为 `https://auth.zhangyvjing.com`。登录走授权码 + PKCE，不会转发用户密码 | `https://auth.zhangyvjing.com` |
+| `ZHANG_AUTH_CLIENT_ID`                | 文本      | 静态登记的第一方 OIDC client ID；回调固定为 `https://你的域名/user_api/oidc/callback` | `tmpmail-web` |
+| `ZHANG_AUTH_CLIENT_SECRET`            | Secret    | OIDC client secret，仅用 `wrangler secret put` 设置，绝不能写入配置文件或 admin OAuth2 设置 | - |
+| `TMPMAIL_OIDC_COOKIE_SECRET`          | Secret    | 用于签名 10 分钟 OIDC state/nonce/PKCE 事务 Cookie 和 60 秒登录交接 Cookie；用 `openssl rand -base64 48` 生成 | - |
 | `TMPMAIL_OWNER_EMAIL`                 | 文本      | `tmpmail` 的主账号邮箱。轻量接入模式下，该邮箱会自动映射为 `ADMIN_USER_ROLE`，并默认拥有无限地址额度 | `owner@example.com` |
 | `USER_DEFAULT_ROLE`                   | 文本      | 新用户默认角色, 仅在启用邮件验证时有效                                   | `vip`   |
 | `ADMIN_USER_ROLE`                     | 文本      | admin 角色配置, 如果用户角色等于 ADMIN_USER_ROLE 则可以访问 admin 控制台 | `admin` |
@@ -128,6 +131,7 @@
 >
 > - 如果 `domains` 为空将使用 `DEFAULT_DOMAINS`
 > - 如果 prefix 为 null 将使用默认前缀, 如果 prefix 为空字符串将不使用前缀
+> - 配置 Zhang Auth 时，登录入口为 `GET /user_api/oidc/login`，回调为 `GET /user_api/oidc/callback`。Worker 强制验证 state、nonce、S256 PKCE、Discovery/JWKS、ES256 签名、issuer、audience 与过期时间；首次登录要求认证中心返回已验证邮箱，并以 OIDC `sub` 而非邮箱持续关联用户
 > - 当 `ZHANG_AUTH_URL` 已配置且你没有单独写角色配额时，系统会把 `TMPMAIL_OWNER_EMAIL` 映射到 `ADMIN_USER_ROLE` 并默认无限地址；其他通过统一认证首次登录的用户会落到 `USER_DEFAULT_ROLE`，默认最多 2 个地址
 >
 > 通过用户界面部署时 `USER_ROLES` 请配置为此格式 `[{"domains":["awsl.uk","dreamhunter2333.xyz"],"role":"vip","prefix":"vip"},{"domains":["awsl.uk","dreamhunter2333.xyz"],"role":"admin","prefix":""}]`

@@ -15,7 +15,7 @@ This page describes **Address JWT**, which is different from **User JWT**:
 :::
 
 > [!NOTE]
-> If `ZHANG_AUTH_URL` is configured, tmpmail delegates sign-in to the external auth center. Sign-up, email verification, and password-recovery flows should then use the hosted pages from that auth service. After the user's first successful tmpmail sign-in, the worker auto-provisions the local user and issues the local `x-user-token`.
+> With Zhang Auth OIDC configured, tmpmail redirects through `/user_api/oidc/login` and returns using Authorization Code + PKCE. A successful sign-in creates or links a local user only from a verified OIDC identity, then issues the local `x-user-token`; sign-up, email verification, and password recovery remain hosted by the auth center.
 
 ## Create Email Address via Admin API
 
