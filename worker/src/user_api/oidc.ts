@@ -8,6 +8,7 @@ const transactionCookie = "__Host-tmpmail-oidc";
 const resultCookie = "__Host-tmpmail-oidc-result";
 const transactionLifetimeSeconds = 600;
 const providerName = "https://auth.zhangyvjing.com";
+const redirectUri = "https://tmpmail.zhangyvjing.com/user_api/oidc/callback";
 
 type Discovery = {
     issuer: string;
@@ -30,10 +31,6 @@ function requiredConfig(c: Context<HonoCustomType>) {
     if (!issuer || !clientId || !clientSecret || !cookieSecret) throw new Error("Zhang Auth OIDC is not configured");
     if (issuer !== providerName) throw new Error("Unexpected Zhang Auth issuer");
     return { issuer, clientId, clientSecret, cookieSecret };
-}
-
-function callbackUrl(c: Context<HonoCustomType>) {
-    return new URL("/user_api/oidc/callback", c.req.url).toString();
 }
 
 function randomToken(size = 32): string {
@@ -112,7 +109,7 @@ export default {
             const verifier = randomToken(48);
             const transaction = await Jwt.sign({ state, nonce, verifier, exp: Math.floor(Date.now() / 1000) + transactionLifetimeSeconds }, config.cookieSecret, "HS256");
             const url = new URL(metadata.authorization_endpoint);
-            url.search = new URLSearchParams({ response_type: "code", client_id: config.clientId, redirect_uri: callbackUrl(c), scope: "openid profile email", state, nonce, code_challenge: await sha256Base64Url(verifier), code_challenge_method: "S256" }).toString();
+            url.search = new URLSearchParams({ response_type: "code", client_id: config.clientId, redirect_uri: redirectUri, scope: "openid profile email", state, nonce, code_challenge: await sha256Base64Url(verifier), code_challenge_method: "S256" }).toString();
             const response = c.redirect(url.toString(), 302);
             response.headers.append("Set-Cookie", cookie(transactionCookie, transaction, transactionLifetimeSeconds));
             return response;
@@ -136,7 +133,7 @@ export default {
             const response = await fetch(metadata.token_endpoint, {
                 method: "POST",
                 headers: { "content-type": "application/x-www-form-urlencoded", authorization: `Basic ${btoa(`${config.clientId}:${config.clientSecret}`)}` },
-                body: new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: callbackUrl(c), code_verifier: transaction.verifier }).toString(),
+                body: new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: redirectUri, code_verifier: transaction.verifier }).toString(),
             });
             const tokens = await response.json<{ id_token?: string }>();
             if (!response.ok || !tokens.id_token) throw new Error("OIDC token exchange failed");
