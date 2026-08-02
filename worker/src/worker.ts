@@ -26,6 +26,11 @@ const API_PATHS = [
 	"/external/",
 ];
 
+const isApiPath = (path: string) => API_PATHS.some((prefix) => {
+	const root = prefix.slice(0, -1);
+	return path === root || path.startsWith(prefix);
+});
+
 const app = new Hono<HonoCustomType>()
 //cors
 app.use('/*', cors());
@@ -38,9 +43,10 @@ app.onError((err, c) => {
 app.use('/*', async (c, next) => {
 
 	// check if the request is for static files
-	const isApiRequest = API_PATHS.some(path => c.req.path.startsWith(path));
-	const isFrontendRoute = ["/", "/mail", "/admin", "/admin/"].includes(c.req.path);
-	if (c.env.ASSETS && (isFrontendRoute || !isApiRequest)) {
+	const isHealthCheck = c.req.path === "/health_check";
+	// `/admin` is the Vue management console; `/admin/*` is the protected API.
+	const isFrontendEntry = ["/admin", "/admin/"].includes(c.req.path);
+	if (c.env.ASSETS && !isHealthCheck && (isFrontendEntry || !isApiPath(c.req.path))) {
 		const url = new URL(c.req.raw.url);
 		if (!url.pathname.includes('.')) {
 			// The app owns the root as well as client-side routes.  Fetching an
