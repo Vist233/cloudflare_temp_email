@@ -38,10 +38,15 @@ app.onError((err, c) => {
 app.use('/*', async (c, next) => {
 
 	// check if the request is for static files
-	if (c.env.ASSETS && !API_PATHS.some(path => c.req.path.startsWith(path))) {
+	const isApiRequest = API_PATHS.some(path => c.req.path.startsWith(path));
+	const isFrontendRoute = ["/", "/mail", "/admin", "/admin/"].includes(c.req.path);
+	if (c.env.ASSETS && (isFrontendRoute || !isApiRequest)) {
 		const url = new URL(c.req.raw.url);
 		if (!url.pathname.includes('.')) {
-			url.pathname = ""
+			// The app owns the root as well as client-side routes.  Fetching an
+			// empty pathname bypasses the asset index and falls through to the
+			// health handler, so always resolve an SPA route to its entry file.
+			url.pathname = "/index.html"
 		}
 		return c.env.ASSETS.fetch(url);
 	}
