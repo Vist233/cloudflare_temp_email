@@ -26,7 +26,7 @@ pnpm run deploy -- --message "<source-commit>"
 curl --fail --silent --show-error https://tmpmail.zhangyvjing.com/health_check
 ```
 
-GitHub Actions 使用同一份 `worker/wrangler.toml`，固定 lockfile 安装，保留部署输出并执行健康检查。生产配置使用 `keep_vars = false`，因此发布前确认新增的非秘密变量已经提交；Worker Secrets 不会被部署删除。
+GitHub Actions 使用同一份 `worker/wrangler.toml`，固定 lockfile 安装，保留部署输出并执行健康检查。它只需要仓库 Secrets `CLOUDFLARE_ACCOUNT_ID` 和 `CLOUDFLARE_API_TOKEN`；不再读取 `BACKEND_TOML`。生产配置使用 `keep_vars = false`，因此发布前确认新增的非秘密变量已经提交；Worker Secrets 不会被部署删除。
 
 ## JWT 轮换
 

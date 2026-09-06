@@ -26,7 +26,7 @@ After deployment, run only the credential-free health check:
 curl --fail --silent --show-error https://tmpmail.zhangyvjing.com/health_check
 ```
 
-GitHub Actions uses the same tracked `worker/wrangler.toml`, frozen-lockfile installs, visible deployment output, and the same health check. Production uses `keep_vars = false`; verify new non-secret variables are committed before deploying. Worker Secrets are not deleted by deployments.
+GitHub Actions uses the same tracked `worker/wrangler.toml`, frozen-lockfile installs, visible deployment output, and the same health check. It only needs the repository Secrets `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`; it no longer reads `BACKEND_TOML`. Production uses `keep_vars = false`; verify new non-secret variables are committed before deploying. Worker Secrets are not deleted by deployments.
 
 ## JWT rotation
 
