@@ -8,8 +8,7 @@
 | 变量名                     | 类型        | 说明                                       | 示例                                 |
 | -------------------------- | ----------- | ------------------------------------------ | ------------------------------------ |
 | `DOMAINS`                  | JSON        | 用于临时邮箱的所有域名, 支持多个域名       | `["awsl.uk", "dreamhunter2333.xyz"]` |
-| `JWT_SECRET`               | 文本/Secret | 用于签名 JWT 的密钥，JWT 用于登录鉴权。请使用随机字符串，例如通过 `openssl rand -hex 32` 生成  | `a1b2c3d4...`                        |
-| `ADMIN_PASSWORDS`          | JSON        | admin 控制台密码, 不配置则不允许访问控制台 | `["123", "456"]`                     |
+| `JWT_SECRET`               | Secret      | 用于签名 JWT 的密钥。请通过 `wrangler secret put JWT_SECRET` 设置；轮换前要安排用户重新登录 | - |
 | `ENABLE_USER_CREATE_EMAIL` | 文本/JSON   | 是否允许用户创建邮箱, 不配置则不允许       | `true`                               |
 | `ENABLE_USER_DELETE_EMAIL` | 文本/JSON   | 是否允许用户删除邮件, 不配置则不允许       | `true`                               |
 
@@ -22,6 +21,8 @@
 | 变量名                         | 类型      | 说明                                 | 示例             |
 | ------------------------------ | --------- | ------------------------------------ | ---------------- |
 | `PASSWORDS`                    | JSON      | 网站私有密码, 配置后需要密码才能访问 | `["123", "456"]` |
+| `ENABLE_ADMIN_PASSWORD_AUTH`   | 文本/JSON | 显式启用旧版 `x-admin-auth` 管理口令入口。已有基于角色的 OIDC 管理身份时应保持 `false` | `false` |
+| `ADMIN_PASSWORDS`              | Secret    | 旧版 Admin 控制台口令 JSON 数组；请用 `wrangler secret put ADMIN_PASSWORDS` 设置，只有开关为 `true` 时才会读取 | `[...]` |
 | `DISABLE_ADMIN_PASSWORD_CHECK` | 文本/JSON | 警告: 管理员控制台没有密码或用户检查 | `false`          |
 
 ## 邮箱相关变量

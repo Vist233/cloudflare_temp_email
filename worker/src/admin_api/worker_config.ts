@@ -11,6 +11,7 @@ export default {
             "TITLE": c.env.TITLE,
             "HAS_PASSWORD": utils.getPasswords(c).length,
             "HAS_ADMIN_PASSWORDS": utils.getAdminPasswords(c).length,
+            "ADMIN_PASSWORD_AUTH_ENABLED": utils.isAdminPasswordAuthEnabled(c),
             "ANNOUNCEMENT": utils.getStringValue(c.env.ANNOUNCEMENT),
             "ALWAYS_SHOW_ANNOUNCEMENT": utils.getBooleanValue(c.env.ALWAYS_SHOW_ANNOUNCEMENT),
 

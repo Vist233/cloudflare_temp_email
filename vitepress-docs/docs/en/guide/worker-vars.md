@@ -8,8 +8,7 @@
 | Variable Name              | Type        | Description                                                            | Example                              |
 | -------------------------- | ----------- | ---------------------------------------------------------------------- | ------------------------------------ |
 | `DOMAINS`                  | JSON        | All domains for temporary email, supports multiple domains             | `["awsl.uk", "dreamhunter2333.xyz"]` |
-| `JWT_SECRET`               | Text/Secret | Secret key for signing JWTs used in login and authentication. Use a random string, e.g. generated via `openssl rand -hex 32` | `a1b2c3d4...`                        |
-| `ADMIN_PASSWORDS`          | JSON        | Admin console passwords, console access disabled if not configured     | `["123", "456"]`                     |
+| `JWT_SECRET`               | Secret      | Secret key for signing JWTs used in login and authentication. Set it with `wrangler secret put JWT_SECRET`; rotate it only with a re-login plan | - |
 | `ENABLE_USER_CREATE_EMAIL` | Text/JSON   | Whether to allow users to create mailboxes, disabled if not configured | `true`                               |
 | `ENABLE_USER_DELETE_EMAIL` | Text/JSON   | Whether to allow users to delete emails, disabled if not configured    | `true`                               |
 
@@ -22,6 +21,8 @@
 | Variable Name                  | Type      | Description                                             | Example          |
 | ------------------------------ | --------- | ------------------------------------------------------- | ---------------- |
 | `PASSWORDS`                    | JSON      | Website private passwords, required after configuration | `["123", "456"]` |
+| `ENABLE_ADMIN_PASSWORD_AUTH`   | Text/JSON | Explicitly opt in to the legacy `x-admin-auth` password flow. Keep `false` when role-based OIDC admin access is available | `false` |
+| `ADMIN_PASSWORDS`              | Secret    | JSON array of legacy Admin console passwords. Store it with `wrangler secret put ADMIN_PASSWORDS`; it is ignored unless `ENABLE_ADMIN_PASSWORD_AUTH` is `true` | `[...]` |
 | `DISABLE_ADMIN_PASSWORD_CHECK` | Text/JSON | Warning: Admin console without password or user check   | `false`          |
 
 ## Email Related Variables

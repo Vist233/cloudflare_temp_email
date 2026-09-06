@@ -2,7 +2,9 @@ name = "cloudflare_temp_email"
 main = "src/worker.ts"
 compatibility_date = "2025-04-01"
 compatibility_flags = [ "nodejs_compat" ]
-keep_vars = true
+# Keep the repository configuration authoritative. Secrets are set separately
+# with `wrangler secret put` and are never stored in this file.
+keep_vars = false
 # if you want use custom_domain, you need to add routes
 # routes = [
 # 	{ pattern = "temp-email-api.xxxxx.xyz", custom_domain = true },
@@ -41,8 +43,10 @@ PREFIX = "tmp"
 # DISABLE_CUSTOM_ADDRESS_NAME = true
 # IF YOU WANT TO MAKE YOUR SITE PRIVATE, UNCOMMENT THE FOLLOWING LINES
 # PASSWORDS = ["123", "456"]
-# For admin panel
-# ADMIN_PASSWORDS = ["123", "456"]
+# For admin panel. Password login is opt-in; first-party deployments should
+# prefer a role-based identity provider and keep this disabled.
+# ENABLE_ADMIN_PASSWORD_AUTH = true
+# ADMIN_PASSWORDS is only read when ENABLE_ADMIN_PASSWORD_AUTH is true.
 # warning: no password or user check for admin portal
 # DISABLE_ADMIN_PASSWORD_CHECK = false
 # ADMIN CONTACT, CAN BE ANY STRING
@@ -67,7 +71,7 @@ DOMAINS = ["xxx.xxx1" , "xxx.xxx2"] # all domain names
 #    { domains = ["xxx.xxx1" , "xxx.xxx2"], role = "vip", prefix = "vip" },
 #    { domains = ["xxx.xxx1" , "xxx.xxx2"], role = "admin", prefix = "" },
 # ]
-JWT_SECRET = "xxx"
+# Set the JWT signing key with `wrangler secret put JWT_SECRET`.
 # Optional first-party Zhang Auth OIDC. Register the exact callback
 # https://<your-domain>/user_api/oidc/callback, then set the two secrets with
 # `wrangler secret put`; never put either secret in this file.

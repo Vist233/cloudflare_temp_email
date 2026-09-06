@@ -14,7 +14,7 @@ import { api as telegramApi } from './telegram_api'
 import i18n from './i18n';
 import { email } from './email';
 import { scheduled } from './scheduled';
-import { getPasswords, getBooleanValue, getStringArray, checkIsAdmin } from './utils';
+import { getPasswords, getBooleanValue, getStringArray, checkIsAdmin, isAdminPasswordAuthEnabled } from './utils';
 import { checkAccessControl } from './ip_blacklist';
 
 const API_PATHS = [
@@ -36,7 +36,12 @@ const app = new Hono<HonoCustomType>()
 app.use('/*', cors());
 // error handler
 app.onError((err, c) => {
-	console.error(err)
+	console.error("Unhandled request error", {
+		name: err.name,
+		message: err.message,
+		method: c.req.method,
+		path: c.req.path,
+	});
 	return c.text(`${err.name} ${err.message}`, 500)
 })
 // global middlewares
@@ -131,7 +136,7 @@ const checkUserPayload = async (
 		}
 		c.set("userPayload", payload as UserPayload);
 	} catch (e) {
-		console.error(e);
+		console.warn("User token verification failed", { path: c.req.path });
 	}
 }
 
@@ -151,7 +156,7 @@ const checkoutUserRolePayload = async (
 		if (typeof payload?.user_role !== "string") return;
 		c.set("userRolePayload", payload.user_role);
 	} catch (e) {
-		console.error(e);
+		console.warn("User role token verification failed", { path: c.req.path });
 	}
 }
 
@@ -175,7 +180,7 @@ app.use('/api/*', async (c, next) => {
 	try {
 		return await jwt({ secret: c.env.JWT_SECRET, alg: "HS256" })(c, next);
 	} catch (e) {
-		console.warn(e);
+		console.warn("Address credential verification failed", { path: c.req.path });
 		const lang = c.get("lang") || c.env.DEFAULT_LANG;
 		const msgs = i18n.getMessages(lang);
 		return c.text(msgs.InvalidAddressCredentialMsg, 401)
@@ -211,7 +216,7 @@ app.use('/user_api/*', async (c, next) => {
 		}
 		c.set("userPayload", payload as UserPayload);
 	} catch (e) {
-		console.error(e);
+		console.warn("User token verification failed", { path: c.req.path });
 		return c.text(msgs.UserTokenExpiredMsg, 401)
 	}
 	if (c.req.path.startsWith("/user_api/bind_address")) {
@@ -228,7 +233,7 @@ app.use('/user_api/*', async (c, next) => {
 app.use('/admin/*', async (c, next) => {
 
 	// check header x-admin-auth
-	if (checkIsAdmin(c)) {
+	if (isAdminPasswordAuthEnabled(c) && checkIsAdmin(c)) {
 		await next();
 		return;
 	}
@@ -251,7 +256,7 @@ app.use('/admin/*', async (c, next) => {
 			await next();
 			return;
 		} catch (e) {
-			console.error(e);
+			console.warn("Admin access-token verification failed", { path: c.req.path });
 		}
 	}
 

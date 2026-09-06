@@ -24,6 +24,8 @@
 
 ### Improvements
 
+- improve: |Deployment & Auth| Track the production Wrangler configuration instead of injecting a complete `BACKEND_TOML` repository secret; pin lockfile installs, keep deployment logs visible, add a health check, and make `x-admin-auth` opt-in so production uses the Zhang Auth owner role by default
+- improve: |Security| Store the production `JWT_SECRET` as a Worker Secret with documented rotation/recovery steps; runtime logs no longer print webhook headers/body, OAuth response bodies, or cross-Worker email content
 - improve: |Frontend| Remove the home-page simple mode entry and hide sendbox, send mail, auto reply, webhook, and about tabs from the normal user surface so tmpmail stays focused on inbox, account settings, and appearance
 - improve: |Quota| When no explicit role quota is configured, the default user role is capped at 2 addresses, while the account matching `TMPMAIL_OWNER_EMAIL` is auto-mapped to `ADMIN_USER_ROLE` and stays unlimited
 - improve: |Frontend| Recompose the home page and user page into the shared quiet tool aesthetic: fewer nested cards/tabs, clearer sectional layout for address, inbox, account, and appearance, and removal of the now-unmounted `SimpleIndex` and legacy `BindAddress` components

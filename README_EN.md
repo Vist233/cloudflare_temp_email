@@ -48,6 +48,9 @@
 
 [Documentation](https://temp-mail-docs.awsl.uk) | [Github Action Deployment Guide](https://temp-mail-docs.awsl.uk/en/guide/actions/github-action.html)
 
+See [Production Operations and Recovery](docs/production-operations-en.md) for the
+tracked production configuration, secret rotation, D1 backup, and recovery steps.
+
 <a href="https://temp-mail-docs.awsl.uk/en/guide/actions/github-action.html">
   <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers" height="32">
 </a>

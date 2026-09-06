@@ -50,7 +50,7 @@ export default {
             }
         })
         if (!res.ok) {
-            console.error(`Failed to get access token: ${res.status} ${res.statusText} ${await res.text()}`)
+            console.error(`Failed to get access token: ${res.status} ${res.statusText}`)
             return c.text(msgs.Oauth2FailedGetAccessTokenMsg, 400);
         }
         const resJson = await res.json();
@@ -63,7 +63,7 @@ export default {
             }
         })
         if (!userRes.ok) {
-            console.error(`Failed to get user info: ${userRes.status} ${userRes.statusText} ${await userRes.text()}`)
+            console.error(`Failed to get user info: ${userRes.status} ${userRes.statusText}`)
             return c.text(msgs.Oauth2FailedGetUserInfoMsg, 400);
         }
         const userInfo = await userRes.json<any>()

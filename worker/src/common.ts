@@ -804,8 +804,11 @@ export async function sendWebhook(
         body: body
     });
     if (!response.ok) {
-        console.log("send webhook error", settings.url, settings.method, settings.headers, body);
-        console.log("send webhook error", response.status, response.statusText);
+        console.warn("Webhook delivery failed", {
+            method: settings.method,
+            status: response.status,
+            statusText: response.statusText,
+        });
         return { success: false, message: `send webhook error: ${response.status} ${response.statusText}` };
     }
     return { success: true }
@@ -896,7 +899,7 @@ export async function triggerAnotherWorker(
         }
 
         if (!keywords.some(keyword => keyword && parsedTextLowercase.includes(keyword.toLowerCase()))) {
-            console.log(`worker.binding = ${bindingName} not match keywords, parsedText = ${parsedText}`);
+            console.log("Worker binding skipped: keyword not matched", { binding: bindingName });
             continue;
         }
         try {
@@ -909,7 +912,7 @@ export async function triggerAnotherWorker(
                 bodyObj.headers = headerObj
             }
             const requestBody = JSON.stringify(bodyObj);
-            console.log(`exec worker , binding = ${bindingName} , requestBody = ${requestBody}`);
+            console.log("Executing configured worker binding", { binding: bindingName });
             await method(requestBody);
         } catch (e1) {
             console.error(`execute method = ${methodName} error`, e1);

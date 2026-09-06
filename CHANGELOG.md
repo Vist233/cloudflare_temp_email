@@ -24,6 +24,8 @@
 
 ### Improvements
 
+- improve: |部署与认证| 将生产 Wrangler 配置纳入仓库并移除整块 `BACKEND_TOML` Secret 注入；部署固定 lockfile、保留可见日志与健康检查，`x-admin-auth` 改为显式开关，生产默认使用 Zhang Auth owner 角色
+- improve: |安全| 生产 `JWT_SECRET` 改由 Worker Secret 管理并提供轮换恢复说明；运行日志不再输出 webhook 请求头/正文、OAuth 响应正文或跨 Worker 邮件正文
 - improve: |Frontend| 移除首页极简模式入口，收起发件箱、发信、自动回复、Webhook、About 等非核心收件标签页，让 `tmpmail` 首页聚焦为“收件箱 + 账户设置 + 外观偏好”
 - improve: |Quota| 默认用户角色在未配置额外角色配额时最多创建 2 个地址，`TMPMAIL_OWNER_EMAIL` 对应账户默认映射到 `ADMIN_USER_ROLE` 并保持无限地址
 - improve: |Frontend| 按统一设计语言重排首页与用户页：移除多层 card/tab 嵌套，将地址条、收件箱、账户设置、外观偏好改为分段式工具布局；同时下线未再挂载的 `SimpleIndex` 与旧 `BindAddress` 页面组件

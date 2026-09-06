@@ -186,7 +186,7 @@ export async function extractEmailInfo(
             });
 
             if (!isAllowed) {
-                console.log(`AI extraction skipped for ${address}: not in allowlist`);
+                console.log("AI extraction skipped: address not in allowlist");
                 return;
             }
         }
@@ -218,7 +218,7 @@ export async function extractEmailInfo(
                 `UPDATE raw_mails SET metadata = ? WHERE message_id = ?`
             ).bind(metadata, message_id).run();
 
-            console.log(`AI extraction completed for ${message_id}: ${result.type}`);
+            console.log("AI extraction completed", { resultType: result.type });
         }
     } catch (e) {
         console.error('AI email extraction error:', e);

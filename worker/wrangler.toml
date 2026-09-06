@@ -1,0 +1,44 @@
+name = "cloudflare-temp-email"
+main = "src/worker.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = [ "nodejs_compat" ]
+# This file is the production source of truth. Secrets are managed separately
+# with `wrangler secret put` and are never stored in this file.
+keep_vars = false
+
+# Production site and API share this Worker.
+routes = [
+  { pattern = "tmpmail.zhangyvjing.com/*", zone_name = "zhangyvjing.com" }
+]
+
+[assets]
+directory = "../frontend/dist"
+binding = "ASSETS"
+run_worker_first = true
+
+[vars]
+PREFIX = "tmp"
+PASSWORDS = []
+DEFAULT_DOMAINS = ["zhangyvjing.com"]
+DOMAINS = ["zhangyvjing.com"]
+ADMIN_USER_ROLE = "owner"
+ENABLE_ADMIN_PASSWORD_AUTH = false
+USER_DEFAULT_ROLE = "member"
+ZHANG_AUTH_URL = "https://auth.zhangyvjing.com"
+ZHANG_AUTH_CLIENT_ID = "tmpmail-web"
+TMPMAIL_OWNER_EMAIL = "zhangyvjing@outlook.com"
+USER_ROLES = [
+  { domains = ["zhangyvjing.com"], role = "member", prefix = "tmp" },
+  { domains = ["zhangyvjing.com"], role = "owner", prefix = "tmp" },
+]
+BLACK_LIST = ""
+ENABLE_USER_CREATE_EMAIL = true
+DISABLE_ANONYMOUS_USER_CREATE_EMAIL = true
+ENABLE_USER_DELETE_EMAIL = true
+ENABLE_AUTO_REPLY = false
+DISABLE_SHOW_GITHUB = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "temp-email-db"
+database_id = "25508724-2c46-4e6a-8284-15c0604f25a6"

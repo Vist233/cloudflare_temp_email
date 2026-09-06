@@ -1,18 +1,22 @@
 # Admin Console
 
 > [!NOTE]
-> You need to configure `ADMIN_PASSWORDS` or `ADMIN_USER_ROLE` to access the admin console
-> Admin role configuration: if the user role equals ADMIN_USER_ROLE, they can access the admin console
+> You need a user whose role equals `ADMIN_USER_ROLE` to access the production admin console.
+> The legacy password flow is opt-in through `ENABLE_ADMIN_PASSWORD_AUTH`.
 
 After deploying the frontend application, click the upper-left logo 5 times or visit the `/admin` path to enter the management console.
 
-You need to configure `ADMIN_PASSWORDS` in the backend or ensure the current user role is `ADMIN_USER_ROLE`, otherwise access to the console will be denied.
+Ensure the current user role is `ADMIN_USER_ROLE`, otherwise access to the console will be denied. For a legacy password flow, explicitly set `ENABLE_ADMIN_PASSWORD_AUTH = true` and store `ADMIN_PASSWORDS` as a Worker Secret. Do not put admin passwords in `[vars]` or a repository Secret containing the whole Wrangler file.
 
 ## Admin Passwords vs User Accounts
 
-`ADMIN_PASSWORDS` is the management password for the Admin console. It is not a site user account
+`ADMIN_PASSWORDS` is the optional legacy management password for the Admin console. It is not a site user account
 and does not correspond to any mailbox address. Logging in with an admin password grants access to
 the console, but that login itself cannot receive mail.
+
+When the site has a first-party OIDC provider, prefer the role-based path and leave
+`ENABLE_ADMIN_PASSWORD_AUTH` unset or `false`. Rotating `JWT_SECRET` invalidates all existing
+mailbox and user JWTs; users must sign in again, while D1 data and the OIDC account remain intact.
 
 Site user accounts are stored in the `users` table and use the user login flow. Whether a user can
 receive mail depends on whether they created or bound a mailbox address. Creating a normal user

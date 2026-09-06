@@ -1,16 +1,18 @@
 # Admin 控制台
 
 > [!NOTE]
-> 需要配置 `ADMIN_PASSWORDS` 或者 `ADMIN_USER_ROLE` 才可以访问 admin 控制台
-> admin 角色配置, 如果用户角色等于 ADMIN_USER_ROLE 则可以访问 admin 控制台
+> 生产环境需要使用角色等于 `ADMIN_USER_ROLE` 的用户进入 admin 控制台。
+> 旧版口令入口必须通过 `ENABLE_ADMIN_PASSWORD_AUTH` 显式开启。
 
 部署前端应用之后，点击 左上角 logo 5 次 或者访问 `/admin` 路径即可进入管理控制台。
 
-需要在后端配置 `ADMIN_PASSWORDS` 或者当前用户角色为 `ADMIN_USER_ROLE`，否则不允许访问控制台。
+当前用户角色必须为 `ADMIN_USER_ROLE`，否则不允许访问控制台。如果确实需要旧版口令入口，必须显式设置 `ENABLE_ADMIN_PASSWORD_AUTH = true`，并把 `ADMIN_PASSWORDS` 作为 Worker Secret 设置。不要把 admin 口令放在 `[vars]` 或包含完整 Wrangler 配置的仓库 Secret 中。
 
 ## 管理口令和用户账号的区别
 
-`ADMIN_PASSWORDS` 是 Admin 控制台的管理口令，不是站点用户账号，也不对应某个邮箱地址。使用管理口令登录后可以进入后台，但它本身不能收信。
+`ADMIN_PASSWORDS` 是可选的旧版 Admin 控制台管理口令，不是站点用户账号，也不对应某个邮箱地址。使用管理口令登录后可以进入后台，但它本身不能收信。
+
+如果站点已经接入第一方 OIDC，优先使用基于角色的入口，并保持 `ENABLE_ADMIN_PASSWORD_AUTH` 未设置或为 `false`。轮换 `JWT_SECRET` 会使已有邮箱与用户 JWT 失效；用户需要重新登录，但 D1 数据和 OIDC 账号不会丢失。
 
 站点用户账号存储在 `users` 表中，需要通过用户登录体系进入；用户是否能收信取决于是否创建或绑定了邮箱地址。即使你创建了一个邮箱为 `admin@example.com` 或用户名看起来像 `admin` 的普通用户，它也不会自动获得后台权限。
 

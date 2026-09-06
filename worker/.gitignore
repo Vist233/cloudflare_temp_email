@@ -130,5 +130,5 @@ dist
 .pnp.*
 
 .wrangler
-wrangler.toml
+# Production `wrangler.toml` is tracked at the repository root policy level.
 .dev.vars

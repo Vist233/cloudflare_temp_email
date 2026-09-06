@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { Jwt } from 'hono/utils/jwt'
 
-import utils, { checkCfTurnstile, getPasswords, getAdminPasswords, hashPassword } from '../utils';
+import utils, { checkCfTurnstile, getPasswords, getAdminPasswords, hashPassword, isAdminPasswordAuthEnabled } from '../utils';
 import i18n from '../i18n';
 
 const api = new Hono<HonoCustomType>()
@@ -27,6 +27,9 @@ api.post('/open_api/site_login', async (c) => {
 api.post('/open_api/admin_login', async (c) => {
     const { password, cf_token } = await c.req.json();
     const msgs = i18n.getMessagesbyContext(c);
+    if (!isAdminPasswordAuthEnabled(c)) {
+        return c.text(msgs.NeedAdminPasswordMsg, 401);
+    }
     if (utils.isGlobalTurnstileEnabled(c)) {
         try {
             await checkCfTurnstile(c, cf_token);

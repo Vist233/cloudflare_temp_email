@@ -48,6 +48,9 @@
 
 [部署文档](https://temp-mail-docs.awsl.uk) | [Github Action 部署文档](https://temp-mail-docs.awsl.uk/zh/guide/actions/github-action.html)
 
+本 fork 的生产配置、密钥轮换、D1 备份和恢复步骤见
+[生产部署与恢复说明](docs/production-operations.md)。
+
 <a href="https://temp-mail-docs.awsl.uk/zh/guide/actions/github-action.html">
   <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers" height="32">
 </a>

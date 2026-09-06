@@ -19,7 +19,7 @@ export const getJsonObjectValue = <T = any>(
     try {
         return JSON.parse(value) as T;
     } catch (e) {
-        console.error(`GetJsonValue: Failed to parse ${value}`, e);
+        console.error("GetJsonValue: Failed to parse configured JSON value", e);
     }
     return null;
 }
@@ -113,7 +113,7 @@ export const getIntValue = (
         try {
             return parseInt(value);
         } catch (e) {
-            console.error(`Failed to parse int value: ${value}`);
+            console.error("Failed to parse configured integer value");
         }
     }
     return defaultValue;
@@ -254,6 +254,16 @@ export const getAdminPasswords = (c: Context<HonoCustomType>): string[] => {
         }
     }
     return c.env.ADMIN_PASSWORDS.filter((item) => item.length > 0);
+}
+
+export const isAdminPasswordAuthEnabled = (c: Context<HonoCustomType>): boolean => {
+    // Keep the upstream password flow available for explicitly configured
+    // deployments, while production can disable it without deleting the
+    // owner OIDC recovery path.
+    if (c.env.ENABLE_ADMIN_PASSWORD_AUTH !== undefined) {
+        return getBooleanValue(c.env.ENABLE_ADMIN_PASSWORD_AUTH);
+    }
+    return getAdminPasswords(c).length > 0;
 }
 
 export const checkIsAdmin = (c: Context<HonoCustomType>): boolean => {
@@ -453,6 +463,7 @@ export default {
     getAnotherWorkerList,
     getPasswords,
     getAdminPasswords,
+    isAdminPasswordAuthEnabled,
     checkIsAdmin,
     getEnvStringList,
     sendAdminInternalMail,

@@ -86,7 +86,7 @@ const sendMailByResend = async (
         `RESEND_TOKEN_${mailDomain.replace(/\./g, "_").toUpperCase()}`
     ] || c.env.RESEND_TOKEN;
     const resend = new Resend(token);
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
         from: reqJson.from_name ? `${reqJson.from_name} <${address}>` : address,
         to: reqJson.to_name ? `${reqJson.to_name} <${reqJson.to_mail}>` : reqJson.to_mail,
         subject: reqJson.subject,
@@ -99,7 +99,7 @@ const sendMailByResend = async (
     if (error) {
         throw new Error(`Resend error: ${error.name} ${error.message}`);
     }
-    console.log(`Resend success: ${JSON.stringify(data)}`);
+    console.log("Resend request succeeded");
 }
 
 const sendMailBySmtp = async (

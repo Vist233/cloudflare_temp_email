@@ -17,7 +17,7 @@ import { compressText } from "../gzip";
 async function email(message: ForwardableEmailMessage, env: Bindings, ctx: ExecutionContext) {
     if (await isBlocked(message.from, env)) {
         message.setReject("Reject from address");
-        console.log(`Reject message from ${message.from} to ${message.to}`);
+        console.log("Inbound mail rejected", { reason: "blocked_sender" });
         return;
     }
     const rawEmail = await new Response(message.raw).text();
@@ -30,7 +30,7 @@ async function email(message: ForwardableEmailMessage, env: Bindings, ctx: Execu
         const is_junk = await check_if_junk_mail(env, message.to, parsedEmailContext, message.headers.get("Message-ID"));
         if (is_junk) {
             message.setReject("Junk mail");
-            console.log(`Junk mail from ${message.from} to ${message.to}`);
+            console.log("Inbound mail rejected", { reason: "junk" });
             return;
         }
     } catch (error) {
@@ -48,7 +48,7 @@ async function email(message: ForwardableEmailMessage, env: Bindings, ctx: Execu
             ).bind(message.to).first("id");
             if (!db_address_id) {
                 message.setReject("Unknown address");
-                console.log(`Unknown address mail from ${message.from} to ${message.to}`);
+                console.log("Inbound mail rejected", { reason: "unknown_address" });
                 return;
             }
         }
